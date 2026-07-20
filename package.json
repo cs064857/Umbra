@@ -1,0 +1,16 @@
+{
+  "name": "umbra",
+  "version": "1.0.0",
+  "description": "Umbra for OpenCode — install into project .opencode/",
+  "bin": {
+    "umbra": "bin/umbra.js"
+  },
+  "files": [
+    "bin",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
