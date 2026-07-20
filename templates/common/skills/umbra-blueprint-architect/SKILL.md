@@ -36,3 +36,10 @@ List the Public methods, focusing solely on the **shape of input/output data** a
 Describe its position in the data flow or architecture. You may use simple text arrows or Mermaid charts.
 **Example:**
 Controller -> **UserService** -> UserRepository
+
+## Scout 與 Blueprint 連動與同步規範 (Scout & Blueprint Co-evolution Policy)
+ 
+ - **連動前提**：當專案目錄下存在 `.scout/` 資料夾（表示已進行過 codebase 偵察）時。
+ - **強制執行規則**：
+   1. **協同閱讀**：在閱讀 `.blueprint/` 目錄中的架構藍圖時，AI **必須**一併讀取並載入 `.scout/` 中的偵察文檔，將「工程意圖（藍圖）」與「程式碼偵察狀態（Scout）」結合理解。
+   2. **雙向同步修改**：在演進或修改 `.blueprint/` 下的設計藍圖時，若該變更影響到了實體程式碼的結構或狀態，**必須**一併同步修改或更新 `.scout/` 中對應的偵察文檔，確保設計意圖與偵察現狀保持平行同步，防範資訊斷層。

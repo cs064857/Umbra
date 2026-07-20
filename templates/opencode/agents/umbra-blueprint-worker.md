@@ -16,7 +16,10 @@ You are the Blueprint Worker. Your task is to process a "Bundle" of related sour
    - Parse the JSON and extract the array of file paths that match the given `bundle_id`.
 3. **Action 2: Context Analysis**
    - Read **ALL** the files in the extracted file list first. This holistic context will help you write much more accurate "Dependency Topology" and "Interface Summary" sections.
+   - **Scout & Blueprint Co-evolution**: If a `.scout/` directory exists in the project root, read the corresponding reconnaissance documents in `.scout/` alongside the source code. When writing or updating a blueprint, ensure you also update/create the corresponding reconnaissance document in `.scout/` so that the engineering intent (Blueprint) and the code survey status (Scout) are evolved and modified together in synchronization.
 4. **Action 3: Generate Blueprints**
+
+
    - For EACH file in the bundle, you must create a corresponding `.blueprint` version in the `.blueprint/` directory at the project root. The path should perfectly mirror the source file path (e.g., `src/main/java/com/app/UserService.java` -> `.blueprint/src/main/java/com/app/UserService.md`).
    - Each blueprint **MUST strictly adhere** to the `umbra-blueprint-architect` skill guidelines. Infer and document the following three sections (written in Traditional Chinese):
      - **職責契約 (Responsibility Contract)**

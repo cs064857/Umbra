@@ -33,14 +33,19 @@ dependencies:
 - **嚴禁**搜尋或存取 `src/` 中的任何檔案。
 - 確認有哪些 `.blueprint/` 下的 Markdown 檔案是本次需求會修改到的。
 - 你必須**讀取它們全部的內容**，確保理解意圖邊界。
+- **Scout 與 Blueprint 協同閱讀**：如果專案根目錄下存在 `.scout/` 資料夾，你**必須**一併完整讀取並載入 `.scout/` 中的偵察報告。這能讓你在推演時將意圖（藍圖）與代碼偵察狀態（Scout）平行對照。
+
 
 ### 階段二：架構演進 (Architecture Evolution)
 
 - 如果需求屬於全新的模組，請使用指令產生空白藍圖：
   `python __UMBRA_ROOT__/skills/umbra/scripts/scaffold.py <src 下的原始碼路徑>`
 - 思考：本次變更是否違反該藍圖已宣告的「職責契約」？有無新增的「接口摘要」或改變「依賴拓撲」？
-- **動手修改**：請使用文件編輯工具，**直接修改** `.blueprint/` 下受影響的 Markdown 檔案內容。
+- **動手修改**：
+  1. 請使用文件編輯工具，**直接修改** `.blueprint/` 下受影響的 Markdown 檔案內容。
+  2. **雙向同步修改**：在修改 `.blueprint/` 下的設計藍圖時，若架構變化影響了現有代碼的結構與狀態，你**必須**一併同步修改或更新 `.scout/` 中受影響的偵察文檔，確保兩者平行同步演進。
 - 改好之後，你可以執行 `python __UMBRA_ROOT__/skills/umbra/scripts/visualize.py` 檢視最新的依賴 Mermaid 圖。
+
 
 ### 階段三：派發投影同步 (Projection)
 
