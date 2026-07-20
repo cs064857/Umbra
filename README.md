@@ -37,7 +37,7 @@ Skills are shared; install rewrites `__UMBRA_ROOT__` → `.opencode` or `.pi`.
 .opencode/
   agents/umbra-{orchestrator,coder}.md
   commands/umbra.md
-  skills/{umbra,blueprint-architect}/
+  skills/{umbra,umbra-blueprint-architect}/
 ```
 
 **Pi**
@@ -46,7 +46,7 @@ Skills are shared; install rewrites `__UMBRA_ROOT__` → `.opencode` or `.pi`.
 .pi/
   agents/umbra-{orchestrator,coder}.md
   prompts/umbra.md
-  skills/{umbra,blueprint-architect}/
+  skills/{umbra,umbra-blueprint-architect}/
 ```
 
 ## Local dev

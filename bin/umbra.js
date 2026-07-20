@@ -15,7 +15,7 @@ const TARGETS = {
       { from: "opencode/agents/umbra-coder.md", to: "agents/umbra-coder.md" },
       { from: "opencode/commands/umbra.md", to: "commands/umbra.md" },
       { from: "common/skills/umbra", to: "skills/umbra" },
-      { from: "common/skills/blueprint-architect", to: "skills/blueprint-architect" },
+      { from: "common/skills/umbra-blueprint-architect", to: "skills/umbra-blueprint-architect" },
     ],
   },
   pi: {
@@ -26,7 +26,7 @@ const TARGETS = {
       { from: "pi/agents/umbra-coder.md", to: "agents/umbra-coder.md" },
       { from: "pi/prompts/umbra.md", to: "prompts/umbra.md" },
       { from: "common/skills/umbra", to: "skills/umbra" },
-      { from: "common/skills/blueprint-architect", to: "skills/blueprint-architect" },
+      { from: "common/skills/umbra-blueprint-architect", to: "skills/umbra-blueprint-architect" },
     ],
   },
 };

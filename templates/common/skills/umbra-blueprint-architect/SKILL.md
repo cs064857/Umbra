@@ -1,5 +1,5 @@
 ---
-name: blueprint-architect
+name: umbra-blueprint-architect
 description: Defines the standard structure and rules for creating high-density umbra architecture blueprints (.blueprint directory). Use this skill when generating blueprints or designing architecture.
 ---
 

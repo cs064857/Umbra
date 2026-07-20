@@ -12,7 +12,7 @@ Git-installable CLI that **copies** Umbra agents/skills into a consumer project.
 | `templates/pi/` | Pi-only agents + entry files |
 | `package.json` `files` | Only `bin` + `templates` ship. |
 
-Anything under `templates/` **not** listed in `TARGETS[target].files` is **not** installed (e.g. extra blueprint agents may exist on disk but stay out of consumer projects until added to `TARGETS`).
+Anything under `templates/` **not** listed in `TARGETS[target].files` is **not** installed (e.g. extra umbra-blueprint agents may exist on disk but stay out of consumer projects until added to `TARGETS`).
 
 ## Commands
 

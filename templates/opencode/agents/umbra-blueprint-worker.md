@@ -18,7 +18,7 @@ You are the Blueprint Worker. Your task is to process a "Bundle" of related sour
    - Read **ALL** the files in the extracted file list first. This holistic context will help you write much more accurate "Dependency Topology" and "Interface Summary" sections.
 4. **Action 3: Generate Blueprints**
    - For EACH file in the bundle, you must create a corresponding `.blueprint` version in the `.blueprint/` directory at the project root. The path should perfectly mirror the source file path (e.g., `src/main/java/com/app/UserService.java` -> `.blueprint/src/main/java/com/app/UserService.md`).
-   - Each blueprint **MUST strictly adhere** to the `blueprint-architect` skill guidelines. Infer and document the following three sections (written in Traditional Chinese):
+   - Each blueprint **MUST strictly adhere** to the `umbra-blueprint-architect` skill guidelines. Infer and document the following three sections (written in Traditional Chinese):
      - **職責契約 (Responsibility Contract)**
      - **接口摘要 (Interface Summary)**
      - **依賴拓撲 (Dependency Topology)**
