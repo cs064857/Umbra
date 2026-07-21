@@ -12,6 +12,7 @@ const TARGETS = {
     done: "Restart OpenCode, then /umbra",
     files: [
       { from: "opencode/agents/umbra-orchestrator.md", to: "agents/umbra-orchestrator.md" },
+      { from: "opencode/agents/umbra-reviewer.md", to: "agents/umbra-reviewer.md" },
       { from: "opencode/agents/umbra-coder.md", to: "agents/umbra-coder.md" },
       { from: "opencode/commands/umbra.md", to: "commands/umbra.md" },
       { from: "common/skills/umbra", to: "skills/umbra" },
@@ -23,6 +24,7 @@ const TARGETS = {
     done: "Restart Pi, then /umbra or run agent umbra-orchestrator",
     files: [
       { from: "pi/agents/umbra-orchestrator.md", to: "agents/umbra-orchestrator.md" },
+      { from: "pi/agents/umbra-reviewer.md", to: "agents/umbra-reviewer.md" },
       { from: "pi/agents/umbra-coder.md", to: "agents/umbra-coder.md" },
       { from: "pi/prompts/umbra.md", to: "prompts/umbra.md" },
       { from: "common/skills/umbra", to: "skills/umbra" },

@@ -4,6 +4,7 @@ agent: umbra-orchestrator
 subtask: true
 dependencies:
   - agents/umbra-orchestrator
+  - agents/umbra-reviewer
   - agents/umbra-coder
 ---
 
