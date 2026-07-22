@@ -5,33 +5,51 @@ const path = require("node:path");
 
 const ROOT = path.join(__dirname, "..", "templates");
 
-/** @type {Record<string, { dir: string, done: string, files: { from: string, to: string }[] }>} */
+/** @type {Record<string, { dir: string, done: string, categories: { from: string, to: string }[] }>} */
 const TARGETS = {
   opencode: {
     dir: ".opencode",
     done: "Restart OpenCode, then /umbra",
-    files: [
-      { from: "opencode/agents/umbra-orchestrator.md", to: "agents/umbra-orchestrator.md" },
-      { from: "opencode/agents/umbra-reviewer.md", to: "agents/umbra-reviewer.md" },
-      { from: "opencode/agents/umbra-coder.md", to: "agents/umbra-coder.md" },
-      { from: "opencode/commands/umbra.md", to: "commands/umbra.md" },
-      { from: "common/skills/umbra", to: "skills/umbra" },
-      { from: "common/skills/umbra-blueprint-architect", to: "skills/umbra-blueprint-architect" },
+    categories: [
+      { from: "common/skills", to: "skills" },
+      { from: "opencode/agents", to: "agents" },
+      { from: "opencode/commands", to: "commands" },
+      { from: "opencode/prompts", to: "prompts" },
     ],
   },
   pi: {
     dir: ".pi",
     done: "Restart Pi, then /umbra or run agent umbra-orchestrator",
-    files: [
-      { from: "pi/agents/umbra-orchestrator.md", to: "agents/umbra-orchestrator.md" },
-      { from: "pi/agents/umbra-reviewer.md", to: "agents/umbra-reviewer.md" },
-      { from: "pi/agents/umbra-coder.md", to: "agents/umbra-coder.md" },
-      { from: "pi/prompts/umbra.md", to: "prompts/umbra.md" },
-      { from: "common/skills/umbra", to: "skills/umbra" },
-      { from: "common/skills/umbra-blueprint-architect", to: "skills/umbra-blueprint-architect" },
+    categories: [
+      { from: "common/skills", to: "skills" },
+      { from: "pi/agents", to: "agents" },
+      { from: "pi/commands", to: "commands" },
+      { from: "pi/prompts", to: "prompts" },
     ],
   },
 };
+
+function getFilesForTarget(targetName) {
+  const t = TARGETS[targetName];
+  if (!t) return [];
+  const files = [];
+
+  for (const { from, to } of t.categories) {
+    const srcDir = path.join(ROOT, from);
+    if (!fs.existsSync(srcDir)) continue;
+
+    const entries = fs.readdirSync(srcDir);
+    for (const entry of entries) {
+      if (entry === "__pycache__" || entry === ".DS_Store") continue;
+      files.push({
+        from: `${from}/${entry}`,
+        to: `${to}/${entry}`,
+      });
+    }
+  }
+
+  return files;
+}
 
 function usage() {
   console.log(`umbra — install Umbra into a project agent dir
@@ -96,7 +114,8 @@ function install(cwd, targetName) {
   const t = TARGETS[targetName];
   const destRoot = path.join(cwd, t.dir);
   const replace = { __UMBRA_ROOT__: t.dir };
-  for (const { from, to } of t.files) {
+  const files = getFilesForTarget(targetName);
+  for (const { from, to } of files) {
     const src = path.join(ROOT, from);
     const dst = path.join(destRoot, to);
     if (!fs.existsSync(src)) {
@@ -113,7 +132,8 @@ function install(cwd, targetName) {
 function uninstall(cwd, targetName) {
   const t = TARGETS[targetName];
   const destRoot = path.join(cwd, t.dir);
-  for (const { to } of t.files) {
+  const files = getFilesForTarget(targetName);
+  for (const { to } of files) {
     const dst = path.join(destRoot, to);
     if (!fs.existsSync(dst)) continue;
     rm(dst);

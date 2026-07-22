@@ -6,13 +6,13 @@ Git-installable CLI that **copies** Umbra agents/skills into a consumer project.
 
 | Path | Role |
 |------|------|
-| `bin/umbra.js` | Entire CLI. `TARGETS` whitelist = what `init`/`update`/`uninstall` touch. |
-| `templates/common/` | Shared skills. Copied for every target. |
-| `templates/opencode/` | OpenCode-only agents + `commands/` |
-| `templates/pi/` | Pi-only agents + entry files |
+| `bin/umbra.js` | Entire CLI. Dynamically scans `templates/` categories for `init`/`update`/`uninstall`. |
+| `templates/common/` | Shared skills (`common/skills/`). Copied for every target. |
+| `templates/opencode/` | OpenCode-only `agents/`, `commands/`, and `prompts/`. |
+| `templates/pi/` | Pi-only `agents/`, `commands/`, and `prompts/`. |
 | `package.json` `files` | Only `bin` + `templates` ship. |
 
-Anything under `templates/` **not** listed in `TARGETS[target].files` is **not** installed (e.g. extra umbra-blueprint agents may exist on disk but stay out of consumer projects until added to `TARGETS`).
+All files and subdirectories placed under `templates/common/skills/` and `templates/<target>/` (`agents/`, `commands/`, `prompts/`) are automatically scanned and copied during `init`/`update` without needing to modify `bin/umbra.js`.
 
 ## Commands
 
