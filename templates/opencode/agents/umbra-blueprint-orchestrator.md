@@ -23,7 +23,10 @@ You are the Blueprint Orchestrator. Your role is to initialize the "Umbra / å½±å
 ## Core Rules & Workflow
 
 1. You MUST understand the `umbra-blueprint-architect` skill by reading `~/.config/opencode/skills/umbra-blueprint-architect/SKILL.md`.
-2. **Phase 1: Scan all files**
+2. **Source Code Only & Exclusion Policy**:
+   - **Only read actual source code**: Do NOT read existing `.md` documentation files (except `AGENTS.md`) to avoid being misled by stale or inaccurate docs.
+   - **Exclude non-code directories**: Ignore IDE, tool, temporary, and build directories (such as `.serena`, `.vscode`, `.idea`, `.git`, `temp`, `tmp`, `node_modules`, `dist`, `build`, etc.) and ensure all rules in `.gitignore` and `.blueprintignore` are enforced.
+3. **Phase 1: Scan all files**
    - Execute the scanner script WITHOUT a limit to get ALL files:
      `python ~/.config/opencode/skills/umbra-blueprint-architect/scripts/scanner.py <project_root_absolute_path>`
    - If it outputs "SCAN_COMPLETE", your job is done.

@@ -15,7 +15,8 @@ You are the Blueprint Worker. Your task is to process a "Bundle" of related sour
    - Read the `.blueprint/bundles.json` file.
    - Parse the JSON and extract the array of file paths that match the given `bundle_id`.
 3. **Action 2: Context Analysis**
-   - Read **ALL** the files in the extracted file list first. This holistic context will help you write much more accurate "Dependency Topology" and "Interface Summary" sections.
+   - Read **ALL** the source code files in the extracted file list first. Analyze purely based on actual source code files. **Do NOT read pre-existing `.md` documentation files (except `AGENTS.md`)** to prevent stale or inaccurate documentation from corrupting blueprint intent.
+   - Ignore any non-code directories or files (such as `.serena`, `.vscode`, `.idea`, `temp`, `tmp`, etc.).
    - **Scout & Blueprint Co-evolution**: If a `.scout/` directory exists in the project root, read the corresponding reconnaissance documents in `.scout/` alongside the source code. When writing or updating a blueprint, ensure you also update/create the corresponding reconnaissance document in `.scout/` so that the engineering intent (Blueprint) and the code survey status (Scout) are evolved and modified together in synchronization.
 4. **Action 3: Generate Blueprints**
 
