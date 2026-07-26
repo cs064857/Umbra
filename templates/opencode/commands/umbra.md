@@ -1,7 +1,6 @@
 ---
 description: 觸發「影子架構 (The Architect)」工作流，進行意圖驅動的軟體修改，禁止 AI 直接寫源碼。
 agent: umbra-orchestrator
-subtask: true
 dependencies:
   - agents/umbra-orchestrator
   - agents/umbra-reviewer
@@ -18,5 +17,4 @@ dependencies:
 ## Workflow Entrypoint
 
 1. 啟動 `umbra-orchestrator` agent。
-2. 以 `subtask: true` 模式運行。
-3. 把使用者所有的附加原始 Prompt，完整地轉交給這位首席架構師。
+2. 把使用者所有的附加原始 Prompt，完整地轉交給這位首席架構師。
