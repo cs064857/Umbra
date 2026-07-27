@@ -1,8 +1,7 @@
 ---
-description: 觸發「影子架構 (The Architect)」工作流，進行意圖驅動的軟體修改，禁止 AI 直接寫源碼。
+description: 觸發「影子架構 (The Architect)」工作流，進行意圖驅動的軟體修改，禁止 AI 直接寫源碼。可在指令後加上 --auto 旗標跳過藍圖修改後的用戶確認關卡。
 agent: umbra-orchestrator
 dependencies:
-  - agents/umbra-orchestrator
   - agents/umbra-reviewer
   - agents/umbra-coder
 ---
@@ -17,4 +16,5 @@ dependencies:
 ## Workflow Entrypoint
 
 1. 啟動 `umbra-orchestrator` agent。
-2. 把使用者所有的附加原始 Prompt，完整地轉交給這位首席架構師。
+2. 把使用者所有的附加原始 Prompt（包含可選的 `--auto` 旗標），完整地轉交給這位首席架構師。
+3. `umbra-orchestrator` 完成藍圖修改與審核後，預設會向使用者展示詳細資訊並等待確認同意；若 Prompt 中包含 `--auto` 旗標，則會自動續行實施投影。
