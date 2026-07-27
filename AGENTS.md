@@ -7,7 +7,7 @@ Git-installable CLI that **copies** Umbra agents/skills into a consumer project.
 | Path | Role |
 |------|------|
 | `bin/umbra.js` | Entire CLI. Dynamically scans `templates/` categories for `init`/`update`/`uninstall`. |
-| `templates/common/` | Shared skills (`common/skills/`). Copied for every target. |
+| `templates/common/` | Shared skills (`common/skills/`) and rules (`common/rules/`). Copied for every target. |
 | `templates/opencode/` | OpenCode-only `agents/`, `commands/`, and `prompts/`. |
 | `templates/pi/` | Pi-only `agents/`, `commands/`, and `prompts/`. |
 | `package.json` `files` | Only `bin` + `templates` ship. |

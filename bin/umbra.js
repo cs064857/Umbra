@@ -12,6 +12,7 @@ const TARGETS = {
     done: "Restart OpenCode, then /umbra",
     categories: [
       { from: "common/skills", to: "skills" },
+      { from: "common/rules", to: "rules" },
       { from: "opencode/agents", to: "agents" },
       { from: "opencode/commands", to: "commands" },
       { from: "opencode/prompts", to: "prompts" },
@@ -22,6 +23,7 @@ const TARGETS = {
     done: "Restart Pi, then /umbra or run agent umbra-orchestrator",
     categories: [
       { from: "common/skills", to: "skills" },
+      { from: "common/rules", to: "rules" },
       { from: "pi/agents", to: "agents" },
       { from: "pi/commands", to: "commands" },
       { from: "pi/prompts", to: "prompts" },
