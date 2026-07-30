@@ -158,6 +158,19 @@ function ensureRepomixInstalled() {
   }
 }
 
+function ensureGitIgnore(cwd) {
+  const gitignorePath = path.join(cwd, ".gitignore");
+  if (fs.existsSync(gitignorePath)) {
+    const content = fs.readFileSync(gitignorePath, "utf8");
+    const target = "blueprint-context.xml";
+    if (!content.includes(target)) {
+      const newLine = content.endsWith("\n") ? target + "\n" : "\n" + target + "\n";
+      fs.appendFileSync(gitignorePath, newLine, "utf8");
+      console.log("+ added blueprint-context.xml to .gitignore");
+    }
+  }
+}
+
 function install(cwd, targetName) {
   const t = TARGETS[targetName];
   const destRoot = path.join(cwd, t.dir);
@@ -177,6 +190,7 @@ function install(cwd, targetName) {
 
   ensureRepomixConfig(cwd);
   ensureRepomixInstalled();
+  ensureGitIgnore(cwd);
 
   console.log(`\nDone (${targetName}). ${t.done}`);
 }
