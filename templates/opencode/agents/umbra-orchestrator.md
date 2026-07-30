@@ -37,13 +37,28 @@ dependencies:
 
 ### 階段一：全域索引與藍圖拾取 (Blueprint Indexing)
 
-- **一次性完整讀取整個 `.blueprint/` 目錄結構**：逐一讀取所有 `.md` 與 `.json` 檔案的完整內容。**禁止只讀取部分檔案或僅讀取頂層檔案，必須包含所有子目錄下的檔案。**
-- 一個專案可能包含前端與後端（或多個子模組），每個子模組可能各自擁有獨立的 `.blueprint/` 資料夾。你必須**搜尋專案根目錄下所有的 `.blueprint/` 資料夾**，全部載入後才能開始分析。
-- 讀取 `.blueprint/README.md` (或 `bundles.json`) 了解架構全域地圖與 Bundle 結構。
+- **利用 Repomix 打包與全量 Context 讀取 (`blueprint-context.xml`)**：
+  - 既然要全量讀取 `.blueprint/` 與 `.scout/`，請利用 `repomix` 建立完 `blueprint-context.xml` 後再讀取該檔案。
+  - 檢查專案根目錄下是否存在 `repomix.config.json`；若不存在，請先建立該檔案於專案目錄底下，內容如下：
+    ```json
+    {
+      "output": {
+        "filePath": "blueprint-context.xml",
+        "style": "xml"
+      },
+      "include": [
+        ".blueprint/**/*",
+        ".scout/**/*"
+      ],
+      "ignore": {
+        "useDefaultPatterns": false
+      }
+    }
+    ```
+  - 執行 `npx repomix` 指令，利用 `repomix.config.json` 設定在專案根目錄建立/更新 `blueprint-context.xml`。
+  - **讀取 `blueprint-context.xml`**：完整讀取生成的 `blueprint-context.xml` 檔案，一次性將整個 `.blueprint/` 與 `.scout/` 資料夾下的所有文檔（包含 README、bundles.json、所有藍圖及偵察報告）完整載入。
 - **嚴禁**搜尋或存取 `src/` 中的任何檔案。
-- 確認有哪些 `.blueprint/` 下的 Markdown 檔案是本次需求會修改到的。
-- 你必須**讀取它們全部的內容**，確保理解意圖邊界。
-- **Scout 與 Blueprint 協同閱讀**：如果專案根目錄下存在 `.scout/` 資料夾，你**必須**一併完整讀取並載入 `.scout/` 中的偵察報告。這能讓你在推演時將意圖（藍圖）與代碼偵察狀態（Scout）平行對照。
+- 透過已載入的 `blueprint-context.xml` 理解架構全域地圖與意圖邊界，確認本次需求受影響的藍圖與偵察範圍。
 
 
 ### 階段二：架構演進 (Architecture Evolution)

@@ -1,0 +1,13 @@
+{
+  "output": {
+    "filePath": "blueprint-context.xml",
+    "style": "xml"
+  },
+  "include": [
+    ".blueprint/**/*",
+    ".scout/**/*"
+  ],
+  "ignore": {
+    "useDefaultPatterns": false
+  }
+}

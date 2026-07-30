@@ -2,6 +2,7 @@
 // ponytail: multi-target copy; --opencode (default) | --pi
 const fs = require("node:fs");
 const path = require("node:path");
+const { execSync } = require("node:child_process");
 
 const ROOT = path.join(__dirname, "..", "templates");
 
@@ -112,6 +113,51 @@ function rm(p) {
   fs.rmSync(p, { recursive: true, force: true });
 }
 
+function ensureRepomixConfig(cwd) {
+  const configPath = path.join(cwd, "repomix.config.json");
+  if (!fs.existsSync(configPath)) {
+    const content = JSON.stringify(
+      {
+        output: {
+          filePath: "blueprint-context.xml",
+          style: "xml",
+        },
+        include: [
+          ".blueprint/**/*",
+          ".scout/**/*",
+        ],
+        ignore: {
+          useDefaultPatterns: false,
+        },
+      },
+      null,
+      2
+    ) + "\n";
+    fs.writeFileSync(configPath, content, "utf8");
+    console.log("+ repomix.config.json");
+  }
+}
+
+function ensureRepomixInstalled() {
+  let hasRepomix = false;
+  try {
+    execSync("repomix --version", { stdio: "ignore" });
+    hasRepomix = true;
+  } catch (e) {
+    hasRepomix = false;
+  }
+
+  if (!hasRepomix) {
+    console.log("repomix not found. Installing globally via npm install -g repomix...");
+    try {
+      execSync("npm install -g repomix", { stdio: "inherit" });
+      console.log("+ repomix (globally installed)");
+    } catch (err) {
+      console.warn("Failed to automatically install repomix globally. Please run 'npm install -g repomix' manually.");
+    }
+  }
+}
+
 function install(cwd, targetName) {
   const t = TARGETS[targetName];
   const destRoot = path.join(cwd, t.dir);
@@ -128,6 +174,10 @@ function install(cwd, targetName) {
     cp(src, dst, replace);
     console.log(`+ ${t.dir}/${to.replace(/\\/g, "/")}`);
   }
+
+  ensureRepomixConfig(cwd);
+  ensureRepomixInstalled();
+
   console.log(`\nDone (${targetName}). ${t.done}`);
 }
 

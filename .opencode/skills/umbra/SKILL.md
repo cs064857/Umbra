@@ -22,8 +22,8 @@ description: 影子架構 (Umbra) 工作流核心技能。將「工程意圖」�
 
 **目的**：精確理解本次需求「在架構上屬於哪裡」。
 
-1. **查閱全域索引**：首要動作是讀取 `.blueprint/README.md`（或 `bundles.json`），這份清單會告訴你所有模組與 Bundle 的分佈。
-2. **全量讀取藍圖**：根據需求，判斷可能會動到哪些 `.blueprint/` 下的 Markdown 檔案。使用檢視工具**全量讀取**這些檔案的內容，確保沒有遺漏任何架構邊界限制。
+1. **利用 Repomix 建立與全量讀取 Context**：利用 `repomix` 建立/更新 `blueprint-context.xml`（經由專案根目錄下的 `repomix.config.json` 打包 `.blueprint/` 與 `.scout/`），並全量讀取 `blueprint-context.xml` 一次性載入藍圖與偵察 context。
+2. **查閱與全量讀取藍圖**：透過已載入的 `blueprint-context.xml` 查閱全域地圖與受影響的 `.blueprint/` 與 `.scout/` 檔案內容，確保沒有遺漏任何架構邊界限制。
 
 **禁忌**：
 
