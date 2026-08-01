@@ -13,14 +13,17 @@
    - 實作投影至 `src/` 後，藍圖與程式碼必須 100% 一致。
 
 3. **職責分離 (Role Separation)**：
-   - `umbra-orchestrator` 負責在 `.blueprint/` 下進行架構推演與藍圖修改。
-   - `@umbra-reviewer` 負責獨立審核藍圖方案。
-   - `umbra-coder` 負責將審核通過的藍圖投影實作至 `src/`。
+   - `umbra-orchestrator` 負責在 `.blueprint/` 下進行架構推演與藍圖修改（可透過 `--worktree` 隔離修改、`--ask` 進行訪談對齊）。
+   - `@umbra-reviewer` 負責獨立審核藍圖方案（可使用 `--direct` 跳過此審核）。
+   - `umbra-coder` 負責將審核通過（或直連模式）的藍圖投影實作至 `src/`。
 
 4. **跨輪次狀態重置 (Multi-Turn Reset Invariant)**：
    - 不論當前是對話的第幾輪追問，也不論 Context 中是否已包含上一輪讀取的藍圖內容，**只要接收到使用者的新需求或追問，都必須強制將其視為獨立的新演進，嚴格從「階段一：全域索引與藍圖拾取」重新開始**！
    - 未編輯藍圖並通過審核前，絕對禁止接續編輯 `src/` 原始碼。
 
-5. **使用者同意關卡 (User Approval Gate)**：
-   - `umbra-orchestrator` 修改完藍圖並完成審核後，必須先告訴使用者詳細資訊（藍圖變更、架構影響與預計投影計畫），等使用者同意後才能實施投影等後續。
-   - 除非在調用時加上了 `--auto` 旗標，則不需要詢問，可自動進行投影。
+5. **使用者同意關卡 (User Approval Gate) 與 旗標擴充**：
+   - `umbra-orchestrator` 修改完藍圖並完成審核（或帶 `--direct` 模式）後，必須先告訴使用者詳細資訊（藍圖變更、架構影響與預計投影計畫），等使用者同意後才能實施投影等後續。
+   - **`--auto`**：跳過使用者同意關卡，自動續行實施投影。
+   - **`--worktree`**：任何變更前先建立 Git Worktree，不影響主分支。
+   - **`--ask`**：藍圖推演前調用 `grilling` 技能進行需求訪談對齊。
+   - **`--direct`**：該任務無須經過 `@umbra-reviewer` 審查。
