@@ -27,3 +27,4 @@
    - **`--worktree`**：任務開始前先建立 Git Worktree，並將該 Worktree 目錄傳遞至所有後續作業。**成果檢查與驗證必須在該 Worktree 目錄中執行**，嚴禁因主分支未變更而誤判未完成並重複重做。
    - **`--ask`**：藍圖推演前調用 `grilling` 技能進行需求訪談對齊。
    - **`--direct`**：該任務無須經過 `@umbra-reviewer` 審查。
+   - **`--all`**：階段一強制使用 Repomix 打包 `.blueprint/` 與 `.scout/` 為 `blueprint-context.xml` 全量讀取；未加時預設為：必讀兩個 README 索引後，按需求逐步讀取受影響文檔。

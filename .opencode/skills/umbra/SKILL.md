@@ -21,6 +21,7 @@ description: 影子架構 (Umbra) 工作流核心技能。將「工程意圖」�
 - `--worktree`：於任務開始前開啟獨立 Git Worktree，避免影響主分支 (`master`/`main`)。必須記錄該 Worktree 目錄絕對路徑，後續所有投影實作與成果檢查**均必須在此 Worktree 目錄內進行**，嚴禁因主分支未變更而誤判為未完成並盲目重做。
 - `--ask`：在藍圖推演前先調用 `grilling` 技能進行需求質詢與訪談對齊。
 - `--direct`：跳過 `@umbra-reviewer` 藍圖審查階段，直接推進至確認或投影。
+- `--all`：強制使用 Repomix 將 `.blueprint/` 與 `.scout/` 打包為 `blueprint-context.xml` 並一次性全量讀取；未加此旗標時預設逐步按需讀取（大專案建議預設以省 context）。
 
 ## 思考三階段（線性流程，不可跳過）
 
@@ -30,8 +31,10 @@ description: 影子架構 (Umbra) 工作流核心技能。將「工程意圖」�
 
 **目的**：精確理解本次需求「在架構上屬於哪裡」。
 
-1. **利用 Repomix 建立與全量讀取 Context**：利用 `repomix` 建立/更新 `blueprint-context.xml`（經由專案根目錄下的 `repomix.config.json` 打包 `.blueprint/` 與 `.scout/`），並全量讀取 `blueprint-context.xml` 一次性載入藍圖與偵察 context。
-2. **查閱與全量讀取藍圖**：透過已載入的 `blueprint-context.xml` 查閱全域地圖與受影響的 `.blueprint/` 與 `.scout/` 檔案內容，確保沒有遺漏任何架構邊界限制。
+1. **必讀全域索引 README**：不論是否使用 `--all`，**必讀** `.blueprint/README.md` 與 `.scout/README.md`，先建立全域地圖、依賴拓撲與文檔索引。
+2. **依旗標選擇載入策略**：
+   - **（預設）逐步按需讀取**：根據 README 索引與需求關鍵字，僅逐步讀取本次受影響範圍的 `.blueprint/` 與 `.scout/` 文檔（可搭配 `glob`/`grep` 輔助定位），避免一次性載入整個知識庫造成 context 超載。
+   - **（`--all` 旗標）Repomix 全量讀取**：利用 `repomix` 建立/更新 `blueprint-context.xml`（經由專案根目錄下的 `repomix.config.json` 打包 `.blueprint/` 與 `.scout/`），並全量讀取 `blueprint-context.xml` 一次性載入藍圖與偵察 context。
 
 **禁忌**：
 

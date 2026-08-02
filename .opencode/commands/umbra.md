@@ -1,5 +1,5 @@
 ---
-description: 觸發「影子架構 (The Architect)」工作流，進行意圖驅動的軟體修改，禁止 AI 直接寫源碼。支援 --auto、--worktree、--ask、--direct 旗標。
+description: 觸發「影子架構 (The Architect)」工作流，進行意圖驅動的軟體修改，禁止 AI 直接寫源碼。支援 --auto、--worktree、--ask、--direct、--all 旗標。
 agent: umbra-orchestrator
 dependencies:
   - agents/umbra-reviewer
@@ -21,4 +21,5 @@ dependencies:
    - `--worktree`：修改前先開啟獨立 Git Worktree，並於該 Worktree 目錄下進行所有演進、投影與完成度檢查（嚴禁因主分支未變更而誤判重做）。
    - `--ask`：進行藍圖演進前，先調用 `grilling` 技能進行需求訪談對齊。
    - `--direct`：跳過 `@umbra-reviewer` 審查階段，直接推進至確認或投影。
+   - `--all`：階段一以 Repomix 全量打包讀取 `.blueprint/` + `.scout/`；未加時預設為必讀兩個 README 索引後逐步按需讀取。
 3. `umbra-orchestrator` 依據旗標組合完成隔離、訪談、藍圖演進與審核/派發流程。

@@ -31,6 +31,7 @@ dependencies:
 - `--worktree`: 隔離工作區模式。在開始任務進行任何變更前，先載入 `using-git-worktrees` 技能建立獨立 Git Worktree，避免修改影響主分支。
 - `--ask`: 訪談對齊模式。在進行藍圖演進前，先載入 `grilling` 技能進行互動式需求訪談，釐清使用者真實意圖與設計邊界。
 - `--direct`: 直連模式。跳過「階段三：藍圖方案審查 (`@umbra-reviewer`)」，藍圖推演完成後直接進入同意關卡或派發投影。
+- `--all`: 全量 Context 模式。階段一使用 Repomix 將 `.blueprint/` 與 `.scout/` 打包為 `blueprint-context.xml` 一次性全量讀取；未加時預設必讀兩個 README 索引後逐步按需讀取。
 
 ## ⚠️ 核心鐵律：藍圖先行與絕對同步 (Blueprint-First & Never-Stale Invariant)
 
@@ -55,32 +56,37 @@ dependencies:
 - **`--ask` 訪談對齊處理**：
   - 檢查提示詞或呼叫參數中是否包含 `--ask` 旗標。
   - **若包含 `--ask`**：在進入藍圖演進之前，請先載入並調用 `grilling` 技能，針對使用者的需求進行深度互動質詢與對齊，確認所有架構設計細節與極端狀況後，再開始修改藍圖。
+- **`--all` 全量 Context 旗標**：
+  - 檢查提示詞或呼叫參數中是否包含 `--all` 旗標；**僅當包含** `--all` 時，階段一才採用 Repomix 全量讀取策略，否則一律預設逐步按需讀取。
 
 
 ### 階段一：全域索引與藍圖拾取 (Blueprint Indexing)
 
-- **利用 Repomix 打包與全量 Context 讀取 (`blueprint-context.xml`)**：
-  - 既然要全量讀取 `.blueprint/` 與 `.scout/`，請利用 `repomix` 建立完 `blueprint-context.xml` 後再讀取該檔案。
-  - 檢查專案根目錄下是否存在 `repomix.config.json`；若不存在，請先建立該檔案於專案目錄底下，內容如下：
-    ```json
-    {
-      "output": {
-        "filePath": "blueprint-context.xml",
-        "style": "xml"
-      },
-      "include": [
-        ".blueprint/**/*",
-        ".scout/**/*"
-      ],
-      "ignore": {
-        "useDefaultPatterns": false
+- **必讀全域索引**：不論旗標，**務必先讀取 `.blueprint/README.md` 與 `.scout/README.md`**，建立全域地圖、依賴拓撲與文檔索引。
+- **檢查 `--all` 旗標，選擇載入策略**：
+  - **若未包含 `--all`（預設：逐步按需讀取）**：根據 README 索引與需求關鍵字，只逐步讀取本次需求受影響的 `.blueprint/` 與 `.scout/` 文檔（可搭配 `glob`/`grep` 輔助定位），禁止一次性全量載入，避免 context 超載。
+  - **若包含 `--all`（Repomix 打包與全量 Context 讀取 `blueprint-context.xml`）**：
+    - 既然要全量讀取 `.blueprint/` 與 `.scout/`，請利用 `repomix` 建立完 `blueprint-context.xml` 後再讀取該檔案。
+    - 檢查專案根目錄下是否存在 `repomix.config.json`；若不存在，請先建立該檔案於專案目錄底下，內容如下：
+      ```json
+      {
+        "output": {
+          "filePath": "blueprint-context.xml",
+          "style": "xml"
+        },
+        "include": [
+          ".blueprint/**/*",
+          ".scout/**/*"
+        ],
+        "ignore": {
+          "useDefaultPatterns": false
+        }
       }
-    }
-    ```
-  - 執行 `npx repomix` 指令，利用 `repomix.config.json` 設定在專案根目錄建立/更新 `blueprint-context.xml`。
-  - **讀取 `blueprint-context.xml`**：完整讀取生成的 `blueprint-context.xml` 檔案，一次性將整個 `.blueprint/` 與 `.scout/` 資料夾下的所有文檔（包含 README、bundles.json、所有藍圖及偵察報告）完整載入。
+      ```
+    - 執行 `npx repomix` 指令，利用 `repomix.config.json` 設定在專案根目錄建立/更新 `blueprint-context.xml`。
+    - **讀取 `blueprint-context.xml`**：完整讀取生成的 `blueprint-context.xml` 檔案，一次性將整個 `.blueprint/` 與 `.scout/` 資料夾下的所有文檔（包含 README、bundles.json、所有藍圖及偵察報告）完整載入。
 - **嚴禁**搜尋或存取專案中的任何真實程式碼檔案（包含 `src/`, `lib/`, `bin/`, `app/` 等所有實作檔）。
-- 透過已載入的 `blueprint-context.xml` 理解架構全域地圖與意圖邊界，確認本次需求受影響的藍圖與偵察範圍。
+- 透過已載入的藍圖與偵察 context（逐步讀取或 `--all` 的 `blueprint-context.xml`）理解架構全域地圖與意圖邊界，確認本次需求受影響的藍圖與偵察範圍。
 
 
 ### 階段二：架構演進 (Architecture Evolution)
