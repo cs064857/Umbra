@@ -1,21 +1,23 @@
 ---
-description: 觸發測試版「影子架構 (The Architect)」工作流，4 角色分工 (Orchestrator 協調 / Architecture 藍圖 / Reviewer 審查 / Coder 投影)。支援 --auto、--worktree、--ask、--direct、--all 旗標。
+description: 觸發測試版「影子架構 (The Architect)」工作流，角色分工 (Orchestrator 協調 / Architecture 藍圖 / Reviewer 審查 / TDD 測試 / Coder 投影)。支援 --auto、--worktree、--ask、--direct、--all、--tdd 旗標。
 agent: test-umbra-orchestrator
 dependencies:
   - agents/test-umbra-architecture
   - agents/test-umbra-reviewer
   - agents/test-umbra-coder
+  - agents/test-umbra-tdd-engineer
 ---
 
 # 🪄 Command: /test-umbra
 
 `/test-umbra` 指令用於觸發重構測試版的「影子架構 (The Architect)」工作流。
 
-這個工作流將職責徹底解耦為 4 個獨立角色：
+這個工作流將職責徹底解耦為獨立角色：
 1. **`test-umbra-orchestrator` (協調者)**：負責編排全流程、處理旗標與使用者進行溝通 bridge，不直接讀寫藍圖與程式碼。
 2. **`test-umbra-architecture` (架構師)**：專注於全量/按需閱讀 `.blueprint/` 與 `.scout/`，進行架構推演與藍圖修訂。
 3. **`test-umbra-reviewer` (審核專家)**：負責審查藍圖品質與可行性，必要時自主修復藍圖。
-4. **`test-umbra-coder` (工程師)**：負責接收審核後的藍圖並投影回專案原始碼，執行測試驗證。
+4. **`test-umbra-tdd-engineer` (TDD 工程師)**：僅在包含 `--tdd` 旗標時被調用，負責在投影前撰寫測試並驗證紅燈失敗證據。
+5. **`test-umbra-coder` (工程師)**：負責接收審核後的藍圖（及 TDD 紅燈測試）並投影回專案原始碼，執行測試驗證。
 
 ## Workflow Entrypoint & Flags
 
@@ -26,4 +28,5 @@ dependencies:
    - `--ask`：進行藍圖演進前，先調用 `grilling` 技能進行需求訪談對齊。
    - `--direct`：跳過 `@test-umbra-reviewer` 審查階段，直接推進至確認或投影。
    - `--all`：階段一指示 `@test-umbra-architecture` 使用 Repomix 全量打包讀取 `.blueprint/` + `.scout/`。
+   - `--tdd`：啟用 TDD 模式，藍圖審核通過後先調用 `@test-umbra-tdd-engineer` 編寫紅燈測試，隨後才派發 `@test-umbra-coder` 將測試轉綠。
 3. `test-umbra-orchestrator` 依據旗標組合調用各 Subagent 完成任務。

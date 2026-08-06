@@ -37,7 +37,7 @@ permission:
 - **必讀全域索引**：**務必先讀取 `.blueprint/README.md` 與 `.scout/README.md`**，建立全域地圖、依賴拓撲與文檔索引。
 - **檢查 `--all` 旗標，選擇載入策略**：
   - **若未包含 `--all`（預設：逐步按需讀取）**：根據 README 索引與需求關鍵字，只逐步讀取本次需求受影響的 `.blueprint/` 與 `.scout/` 文檔（可搭配 `glob`/`grep` 輔助定位），禁止一次性全量載入。
-  - **若包含 `--all`（Repomix 打包與全量 Context 讀取 `blueprint-context.xml`）**：
+  - **若包含 `--all`（Repomix 打包與一次性全量 Context 讀取 `blueprint-context.xml`）**：
     - 檢查專案根目錄下是否存在 `repomix.config.json`；若不存在，請先建立該檔案，內容如下：
       ```json
       {
@@ -55,7 +55,7 @@ permission:
       }
       ```
     - 執行 `npx repomix` 指令更新 `blueprint-context.xml`。
-    - 完整讀取生成的 `blueprint-context.xml` 檔案，一次性全量載入 `.blueprint/` 與 `.scout/`。
+    - **一次性完整讀取 `blueprint-context.xml`**：必須一次性讀取 `blueprint-context.xml` 中的全部內容，**嚴禁分批/分段讀取（讀取時絕對不使用 offset、limit、StartLine 或 EndLine 等參數）**，一次性全量載入 `.blueprint/` 與 `.scout/`。
 - **嚴禁**搜尋或存取專案中的任何真實程式碼檔案。
 
 ### 階段二：架構推演與藍圖更動 (Architectural Evolution)

@@ -28,3 +28,4 @@
    - **`--ask`**：藍圖推演前調用 `grilling` 技能進行需求訪談對齊。
    - **`--direct`**：該任務無須經過 `@umbra-reviewer` 審查。
    - **`--all`**：階段一強制使用 Repomix 打包 `.blueprint/` 與 `.scout/` 為 `blueprint-context.xml` 全量讀取；未加時預設為：必讀兩個 README 索引後，按需求逐步讀取受影響文檔。
+   - **`--tdd`**：TDD 模式。僅當存在 `--tdd` 旗標時，`umbra-orchestrator` 或 `test-umbra-orchestrator` 才會調用對應的 TDD 工程師（`umbra-tdd-engineer` / `test-umbra-tdd-engineer`）編寫紅燈測試；否則預設直接派發 Coder 進行投影實作。（「improve」系列如 `umbra-improve-orchestrator` 則內建 TDD 流水線）。

@@ -22,6 +22,7 @@ description: 影子架構 (Umbra) 工作流核心技能。將「工程意圖」�
 - `--ask`：在藍圖推演前先調用 `grilling` 技能進行需求質詢與訪談對齊。
 - `--direct`：跳過 `@umbra-reviewer` 藍圖審查階段，直接推進至確認或投影。
 - `--all`：強制使用 Repomix 將 `.blueprint/` 與 `.scout/` 打包為 `blueprint-context.xml` 並一次性全量讀取；未加此旗標時預設逐步按需讀取（大專案建議預設以省 context）。
+- `--tdd`：TDD 模式。僅當此旗標存在時，`umbra-orchestrator` / `test-umbra-orchestrator` 才會調用 TDD 工程師編寫紅燈測試；否則直接進行投影實作。
 
 ## 思考三階段（線性流程，不可跳過）
 
