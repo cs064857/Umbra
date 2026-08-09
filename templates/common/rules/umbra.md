@@ -13,9 +13,11 @@
    - 實作投影至專案程式碼後，藍圖與程式碼必須 100% 一致。
 
 3. **職責分離 (Role Separation)**：
-   - `umbra-orchestrator` 負責在 `.blueprint/` 下進行架構推演與藍圖修改（可透過 `--worktree` 隔離修改、`--ask` 進行訪談對齊）。
-   - `@umbra-reviewer` 負責獨立審核藍圖方案（可使用 `--direct` 跳過此審核）。
-   - `umbra-coder` 負責將審核通過（或直連模式）的藍圖投影實作至真實程式碼中。
+   - `umbra-orchestrator` 專注於全流程編排、旗標處理、雙重同意關卡與使用者溝通橋樑，不直接讀寫藍圖文檔或專案原始碼。
+   - `@umbra-architecture` 負責全量/按需閱讀 `.blueprint/` 與 `.scout/`，進行架構推演、藍圖修改與 seam 宣告。
+   - `@umbra-reviewer` 負責獨立審核藍圖方案，發現缺陷時自主修復藍圖。
+   - `@umbra-tdd-engineer` 負責（僅 `--tdd` 模式或改善流水線）依宣告 seam 先行撰寫紅燈失敗測試。
+   - `@umbra-coder` 負責將審核通過的藍圖與 TDD 測試投影實作至真實程式碼中。
 
 4. **跨輪次狀態重置 (Multi-Turn Reset Invariant)**：
    - 不論當前是對話的第幾輪追問，也不論 Context 中是否已包含上一輪讀取的藍圖內容，**只要接收到使用者的新需求或追問，都必須強制將其視為獨立的新演進，嚴格從「階段一：全域索引與藍圖拾取」重新開始**！
@@ -28,4 +30,4 @@
    - **`--ask`**：藍圖推演前調用 `grilling` 技能進行需求訪談對齊。
    - **`--direct`**：該任務無須經過 `@umbra-reviewer` 審查。
    - **`--all`**：階段一強制使用 Repomix 打包 `.blueprint/` 與 `.scout/` 為 `blueprint-context.xml` 全量讀取；未加時預設為：必讀兩個 README 索引後，按需求逐步讀取受影響文檔。
-   - **`--tdd`**：TDD 模式。僅當存在 `--tdd` 旗標時，`umbra-orchestrator` 或 `test-umbra-orchestrator` 才會調用對應的 TDD 工程師（`umbra-tdd-engineer` / `test-umbra-tdd-engineer`）編寫紅燈測試；否則預設直接派發 Coder 進行投影實作。（「improve」系列如 `umbra-improve-orchestrator` 則內建 TDD 流水線）。
+   - **`--tdd`**：TDD 模式。僅當存在 `--tdd` 旗標時，`umbra-orchestrator` 才會調用 TDD 工程師（`umbra-tdd-engineer`）編寫紅燈測試；否則預設直接派發 Coder 進行投影實作。（「improve」系列如 `umbra-improve-orchestrator` 則內建 TDD 流水線）。
