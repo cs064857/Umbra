@@ -22,13 +22,22 @@ description: 影子架構 (Umbra) 工作流核心技能。將「工程意圖」�
 - `--ask`：在藍圖推演前先調用 `grilling` 技能進行需求質詢與訪談對齊。
 - `--direct`：跳過 `@umbra-reviewer` 藍圖審查階段，直接推進至確認或投影。
 - `--all`：強制使用 Repomix 將 `.blueprint/` 與 `.scout/` 打包為 `blueprint-context.xml` 並一次性全量讀取；未加此旗標時預設逐步按需讀取（大專案建議預設以省 context）。
-- `--tdd`：TDD 模式。僅當此旗標存在時，`umbra-orchestrator` / `test-umbra-orchestrator` 才會調用 TDD 工程師編寫紅燈測試；否則直接進行投影實作。
+- `--tdd`：TDD 模式。僅當此旗標存在時，`umbra-orchestrator` 才會調用 TDD 工程師編寫紅燈測試；否則直接進行投影實作。
+
+## 🤖 解耦四角色分工與派發地圖 (Four-Role Decoupled Dispatch Map)
+
+Umbra 採用嚴格的角色與職責解耦架構：
+1. **`umbra-orchestrator` (協調者與溝通橋樑)**：專注於全流程編排、旗標處理與使用者同意關卡溝通。**嚴禁由 Orchestrator 本體親自讀寫藍圖或原始碼**。
+2. **`@umbra-architecture` (藍圖架構師 Subagent)**：由 Orchestrator 使用 `task` 工具調用。專注於全量/按需閱讀 `.blueprint/` 與 `.scout/`，進行架構推演、藍圖修改與 seam 宣告。
+3. **`@umbra-reviewer` (藍圖審核專家 Subagent)**：由 Orchestrator 使用 `task` 工具調用（除非 `--direct`）。專注於藍圖品質與可行性審查，發現缺陷自主修復。
+4. **`@umbra-coder` (資深工程師 Subagent)**：由 Orchestrator 使用 `task` 工具調用。接收審核通過的藍圖，將意圖投影至專案原始碼，並執行測試與編譯驗證。
 
 ## 思考三階段（線性流程，不可跳過）
 
-當你接收到使用者的需求（不論是新增功能、重構或修 Bug），你**必須且只能**遵循以下的思考三階段。禁止跳過任何階段直接寫程式。
+當接收到使用者的需求（不論是新增功能、重構或修 Bug），工作流**必須且只能**遵循以下的思考三階段。
+（注意：`umbra-orchestrator` **必須透過 `task` 工具派發給 `@umbra-architecture` 執行階段一與階段二**，嚴禁 Orchestrator 本體親自編輯藍圖）
 
-### 階段一：全域索引與藍圖拾取 (Blueprint Indexing)
+### 階段一：全域索引與藍圖拾取 (Blueprint Indexing) — 由 `@umbra-architecture` 執行
 
 **目的**：精確理解本次需求「在架構上屬於哪裡」。
 
@@ -42,13 +51,13 @@ description: 影子架構 (Umbra) 工作流核心技能。將「工程意圖」�
 - 嚴禁去專案中尋找真實程式碼檔案或直接開始修改。
 - 嚴禁跳過索引直接動手。
 
-### 階段二：架構演進 (Architecture Evolution)
+### 階段二：架構演進 (Architecture Evolution) — 由 `@umbra-architecture` 執行
 
 **目的**：顧全大局地進行「沙盤推演」，在修改代碼前，先在文檔層面把設計敲定。
 
 1. **職責審視**：檢查使用者提出的新增邏輯，是否違反了被讀取藍圖中的「職責契約」。如果不該放這裡，你必須找出應該放的地方。
 2. **接口與依賴變更**：確定接口是否需要增加傳入參數？副作用改變了嗎？對其他模組的依賴拓撲是否要修改？
-3. **更新藍圖**：使用編輯工具**直接修改** `.blueprint/` 對應的 Markdown 檔案。
+3. **更新藍圖**：由 `@umbra-architecture` 使用編輯工具**直接修改** `.blueprint/` 對應的 Markdown 檔案與 `.scout/` 偵察報告。
 4. **新模組**：如果是全新的檔案，使用 scaffold 腳本建立標準藍圖模板：
    `python __UMBRA_ROOT__/skills/umbra/scripts/scaffold.py <新檔案路徑>`
  5. **驗證拓撲**：執行 visualize 腳本取得最新的全域 Mermaid 拓撲圖：
@@ -58,7 +67,7 @@ description: 影子架構 (Umbra) 工作流核心技能。將「工程意圖」�
 
 - 依然嚴禁修改任何專案中的真實程式碼。
 
-### 階段三：投影同步 (Projection)
+### 階段三：投影同步 (Projection) — 由 `@umbra-coder` 執行
 
 **目的**：將階段二做出的「意圖」改動，轉化為「可執行代碼」。
 

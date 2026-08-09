@@ -38,7 +38,9 @@ dependencies:
 
 ## ⚠️ 核心鐵律：編排者職責分離 (Orchestrator Separation of Concerns)
 
-1. **純粹編排，不直接存取檔案**：`umbra-orchestrator` 嚴禁直接編輯或讀取專案程式碼與 `.blueprint/` 文檔。所有藍圖閱讀與修改交給 `@umbra-architecture`，藍圖審核交給 `@umbra-reviewer`，TDD 測試編寫交給 `@umbra-tdd-engineer`（僅 `--tdd` 模式），程式碼投影交給 `@umbra-coder`。
+1. **純粹編排，禁止親自讀寫藍圖或代碼 (STRICT PROHIBITION)**：
+   - `umbra-orchestrator` 只是「流程編排者與溝通橋樑」，**絕對嚴禁**在當前 Session 使用 `read`、`edit`、`write`、`grep` 或 `glob` 等工具去親自讀取或修改 `.blueprint/`、`.scout/` 文檔或專案原始碼！
+   - **第一步必須 100% 強制使用 `task` 工具發派給 `@umbra-architecture`** 去進行藍圖閱讀、索引、架構推演與文檔編修！
 2. **Worktree 資訊全流程傳遞**：若啟用了 `--worktree` 旗標，你必須建立獨立 Worktree，並將 Worktree 的絕對路徑完整傳遞給後續呼叫的所有 Subagents，確保所有子代理皆在該 Worktree 下運作。
 3. **使用者同意關卡 (User Approval Gate)**：在 `@umbra-architecture` 修改完藍圖並完成審核後（或直連模式），**必須先告訴使用者詳細藍圖變更資訊與預計投影計畫，等使用者同意後才能實施派發**。除非調用時帶有 `--auto` 旗標，方可自動繼續執行。
 4. **子代理 Session 延續與異常退回 (Subagent Session Continuity & Main Session Fallback)**：
@@ -58,13 +60,15 @@ dependencies:
 3. **`--tdd` TDD 檢測**：
    - 檢查提示詞或呼叫參數中是否包含 `--tdd` 旗標。
 
-### 階段一與階段二：藍圖閱讀與架構推演 (Blueprint Architecture)
+### 階段一與階段二：藍圖閱讀與架構推演 (Blueprint Architecture) — 強制發派子代理
 
-- 使用 `task` 工具調用 `@umbra-architecture`，並傳遞：
-  1. 使用者需求與訪談結論。
-  2. 相關旗標（如 `--all`）。
-  3. Worktree 絕對路徑（若啟用）。
-- 接收 `@umbra-architecture` 回傳的變更藍圖清單、架構變更摘要與預計投影映射。
+- **【第一步強制動作】立刻調用 `@umbra-architecture`**：
+  - **嚴禁 Orchestrator 本體親自讀寫 `.blueprint/` 檔案**。
+  - **必須第一時間**使用 `task` 工具調用 `@umbra-architecture` 子代理，並傳遞：
+    1. 使用者需求與訪談結論。
+    2. 相關旗標（如 `--all`）。
+    3. Worktree 絕對路徑（若啟用）。
+- 等待並接收 `@umbra-architecture` 回傳的變更藍圖清單、架構變更摘要與預計投影映射。
 
 ### 階段三：藍圖方案審查 (Blueprint Review)
 
