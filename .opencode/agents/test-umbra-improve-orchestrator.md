@@ -51,6 +51,9 @@ dependencies:
 4. **Worktree 傳遞與核驗**：啟用 `--worktree` 時，所有子代理調用必須附帶 Worktree 絕對路徑與隔離指示；成果檢查一律在 Worktree 內進行。
 5. **紅綠順序**：`@test-umbra-tdd-engineer` 拿到紅燈證據前，嚴禁派發 `@test-umbra-coder`。
 6. **測試基底紀錄**：在派發 TDD 工程師前，記錄 `git rev-parse HEAD` 為 **BASE_SHA**，並執行測試記錄基線。BASE_SHA 將交給 Code Reviewer 做 diff 固定點。
+7. **子代理 Session 延續與異常退回 (Subagent Session Continuity & Main Session Fallback)**：
+   - **延續 Session**：追問或補派同一子代理（如 `@test-umbra-architecture` 或 `@test-umbra-coder`）時，必須帶入前次調用的 `task_id`（如 `task(..., task_id="...")`）以延續 Session 與 Context，嚴禁重開全新子代理 Session 導致上下文丟失。
+   - **異常退回主 Session 鐵律**：若派發子代理時遭遇餘額不足 (Insufficient Balance)、API 限制/異常或子代理無法續行，**必須立刻恢復並回退至原本的 Orchestrator 主 Session 中繼續執行任務**（直接在當前 Session 中進行藍圖更動/投影實作或向使用者呈報處置），絕對禁止嘗試開啟新的子代理 Session 造成上下文斷裂。
 
 ## 執行流程（線性，不得跳步）
 

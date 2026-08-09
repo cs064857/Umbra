@@ -41,6 +41,9 @@ dependencies:
 1. **純粹編排，不直接存取檔案**：`test-umbra-orchestrator` 嚴禁直接編輯或讀取專案程式碼與 `.blueprint/` 文檔。所有藍圖閱讀與修改交給 `@test-umbra-architecture`，藍圖審核交給 `@test-umbra-reviewer`，TDD 測試編寫交給 `@test-umbra-tdd-engineer`（僅 `--tdd` 模式），程式碼投影交給 `@test-umbra-coder`。
 2. **Worktree 資訊全流程傳遞**：若啟用了 `--worktree` 旗標，你必須建立獨立 Worktree，並將 Worktree 的絕對路徑完整傳遞給後續呼叫的所有 Subagents，確保所有子代理皆在該 Worktree 下運作。
 3. **使用者同意關卡 (User Approval Gate)**：在 `@test-umbra-architecture` 修改完藍圖並完成審核後（或直連模式），**必須先告訴使用者詳細藍圖變更資訊與預計投影計畫，等使用者同意後才能實施派發**。除非調用時帶有 `--auto` 旗標，方可自動繼續執行。
+4. **子代理 Session 延續與異常退回 (Subagent Session Continuity & Main Session Fallback)**：
+   - **延續 Session**：追問或補派同一子代理（如 `@test-umbra-architecture` 或 `@test-umbra-coder`）時，必須帶入前次調用的 `task_id`（如 `task(..., task_id="...")`）以延續 Session 與 Context，嚴禁重開全新子代理 Session 導致上下文丟失。
+   - **異常退回主 Session 鐵律**：若派發子代理時遭遇餘額不足 (Insufficient Balance)、API 限制/異常或子代理無法續行，**必須立刻恢復並回退至原本的 Orchestrator 主 Session 中繼續執行任務**（直接在當前 Session 中進行藍圖更動/投影實作或向使用者呈報處置），絕對禁止嘗試開啟新的子代理 Session 造成上下文斷裂。
 
 ## 協調編排流程
 
