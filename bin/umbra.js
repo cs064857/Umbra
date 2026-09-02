@@ -58,34 +58,42 @@ function usage() {
   console.log(`umbra — install Umbra into a project agent dir
 
 Usage:
-  umbra init [--opencode|--pi]     Copy templates (default: --opencode)
-  umbra update [--opencode|--pi]   Overwrite managed files
-  umbra uninstall [--opencode|--pi] Remove managed files only
+  umbra init [--opencode|--pi] [-e|--exclude]     Copy templates (default: --opencode)
+  umbra update [--opencode|--pi] [-e|--exclude]   Overwrite managed files
+  umbra uninstall [--opencode|--pi]               Remove managed files only
 
-Flags (pick one; default opencode):
-  --opencode   → .opencode/  (commands/, OpenCode frontmatter)
-  --pi         → .pi/        (prompts/, Pi frontmatter + subagent)
+Flags:
+  --opencode, --pi    Target agent dir (default: --opencode)
+  -e, --exclude, -i   Add managed files to .git/info/exclude (local ignore)
 
 Install:
   npm i -g git+https://github.com/YOU/umbra.git
-  npx --yes github:YOU/umbra init --pi
+  npx --yes github:YOU/umbra init --pi -e
 `);
 }
 
 function parseArgs(argv) {
-  const flags = argv.filter((a) => a.startsWith("--"));
-  const cmd = argv.find((a) => !a.startsWith("--")) || "help";
+  const flags = argv.filter((a) => a.startsWith("-"));
+  const cmd = argv.find((a) => !a.startsWith("-")) || "help";
   let target = "opencode";
+  let exclude = false;
+
   for (const f of flags) {
-    const name = f.slice(2);
-    if (TARGETS[name]) target = name;
-    else if (name === "help" || name === "h") return { cmd: "help", target };
-    else {
-      console.error(`unknown flag: ${f} (want --${Object.keys(TARGETS).join(" | --")})`);
+    if (f === "--help" || f === "-h") return { cmd: "help", target, exclude };
+    if (f === "-e" || f === "--exclude" || f === "-i" || f === "--gitignore" || f === "-l" || f === "--local") {
+      exclude = true;
+      continue;
+    }
+
+    const name = f.replace(/^--?/, "");
+    if (TARGETS[name]) {
+      target = name;
+    } else {
+      console.error(`unknown flag: ${f} (want --${Object.keys(TARGETS).join(" | --")} | -e | --exclude)`);
       process.exit(1);
     }
   }
-  return { cmd, target };
+  return { cmd, target, exclude };
 }
 
 function cp(src, dst, replace) {
@@ -171,7 +179,46 @@ function ensureGitIgnore(cwd) {
   }
 }
 
-function install(cwd, targetName) {
+function ensureGitExclude(cwd, targetDir) {
+  const gitPath = path.join(cwd, ".git");
+  if (!fs.existsSync(gitPath)) return;
+
+  let gitDir = gitPath;
+  const st = fs.statSync(gitPath);
+  if (st.isFile()) {
+    const content = fs.readFileSync(gitPath, "utf8").trim();
+    const match = content.match(/^gitdir:\s*(.+)$/i);
+    if (match) {
+      gitDir = path.isAbsolute(match[1]) ? match[1] : path.resolve(cwd, match[1]);
+    }
+  }
+
+  const infoDir = path.join(gitDir, "info");
+  fs.mkdirSync(infoDir, { recursive: true });
+  const excludePath = path.join(infoDir, "exclude");
+
+  let existing = "";
+  if (fs.existsSync(excludePath)) {
+    existing = fs.readFileSync(excludePath, "utf8");
+  }
+
+  const targets = [`${targetDir}/`, "repomix.config.json", "blueprint-context.xml"];
+  const added = [];
+
+  for (const item of targets) {
+    if (!existing.includes(item)) {
+      existing = existing.endsWith("\n") || existing.length === 0 ? existing + item + "\n" : existing + "\n" + item + "\n";
+      added.push(item);
+    }
+  }
+
+  if (added.length > 0) {
+    fs.writeFileSync(excludePath, existing, "utf8");
+    console.log(`+ added ${added.join(", ")} to .git/info/exclude`);
+  }
+}
+
+function install(cwd, targetName, exclude) {
   const t = TARGETS[targetName];
   const destRoot = path.join(cwd, t.dir);
   const replace = { __UMBRA_ROOT__: t.dir };
@@ -192,7 +239,29 @@ function install(cwd, targetName) {
   ensureRepomixInstalled();
   ensureGitIgnore(cwd);
 
-  console.log(`\nDone (${targetName}). ${t.done}`);
+  if (exclude) {
+    ensureGitExclude(cwd, t.dir);
+  }
+
+  const isGit = fs.existsSync(path.join(cwd, ".git"));
+
+  console.log(`\n✓ Successfully initialized Umbra (${targetName})!\n`);
+  console.log("Next steps:");
+  console.log(`  1. Get started:`);
+  console.log(`     • ${t.done}`);
+
+  if (isGit) {
+    console.log(`\n  2. Version Control:`);
+    if (exclude) {
+      console.log(`     • Managed files added to .git/info/exclude (local only, repo untouched).`);
+    } else {
+      console.log(`     • Share with team (Recommended):`);
+      console.log(`       git add ${t.dir} repomix.config.json .gitignore`);
+      console.log(`     • Or ignore locally (keep repo untouched):`);
+      console.log(`       echo "${t.dir}/" >> .git/info/exclude`);
+      console.log(`       (or re-run with: umbra update -e)`);
+    }
+  }
 }
 
 function uninstall(cwd, targetName) {
@@ -207,9 +276,9 @@ function uninstall(cwd, targetName) {
   }
 }
 
-const { cmd, target } = parseArgs(process.argv.slice(2));
+const { cmd, target, exclude } = parseArgs(process.argv.slice(2));
 const cwd = process.cwd();
 
-if (cmd === "init" || cmd === "update") install(cwd, target);
+if (cmd === "init" || cmd === "update") install(cwd, target, exclude);
 else if (cmd === "uninstall") uninstall(cwd, target);
 else usage();

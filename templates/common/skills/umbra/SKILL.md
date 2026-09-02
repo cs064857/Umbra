@@ -29,7 +29,7 @@ description: 影子架構 (Umbra) 工作流核心技能。將「工程意圖」�
 Umbra 採用嚴格的角色與職責解耦架構：
 1. **`umbra-orchestrator` (協調者與溝通橋樑)**：專注於全流程編排、旗標處理與使用者同意關卡溝通。**嚴禁由 Orchestrator 本體親自讀寫藍圖或原始碼**。
 2. **`@umbra-architecture` (藍圖架構師 Subagent)**：由 Orchestrator 使用 `task` 工具調用。專注於全量/按需閱讀 `.blueprint/` 與 `.scout/`，進行架構推演、藍圖修改與 seam 宣告。
-3. **`@umbra-reviewer` (藍圖審核專家 Subagent)**：由 Orchestrator 使用 `task` 工具調用（除非 `--direct`）。專注於藍圖品質與可行性審查，發現缺陷自主修復。
+3. **`@umbra-reviewer` (藍圖審核專家 Subagent)**：由 Orchestrator 使用 `task` 工具調用（除非 `--direct`）。專注於藍圖品質、可行性與方案最優性審查（含指標分析、避免 N+1、減少 DB 消耗、優先打 Redis 等），發現缺陷或更優方案時自主修復與優化。
 4. **`@umbra-coder` (資深工程師 Subagent)**：由 Orchestrator 使用 `task` 工具調用。接收審核通過的藍圖，將意圖投影至專案原始碼，並執行測試與編譯驗證。
 
 ## 思考三階段（線性流程，不可跳過）

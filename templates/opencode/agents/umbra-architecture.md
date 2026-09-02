@@ -68,12 +68,18 @@ permission:
   1. 使用檔案編輯工具，**直接修改或新建** `.blueprint/` 下受影響的 Markdown 藍圖檔案。
   2. **雙向同步**：若架構變化影響了現有代碼結構，同步更新 `.scout/` 中受影響的偵察文檔，確保兩者一致。
 - 修改完成後，可執行 `python __UMBRA_ROOT__/skills/umbra/scripts/visualize.py` 檢視依賴 Mermaid 圖。
+- **直連模式定案快照 (`--direct`)**：若本次任務帶有 `--direct` 旗標（跳過 Reviewer 審查），你即為最終定案者，請透過 `bash` 執行：
+  `git diff HEAD -- .blueprint/ .scout/ > .blueprint/.changes.diff`
 
 ## 完成回報
 
 完成藍圖演進後，請向 @umbra-orchestrator 回報：
 
 1. **變更藍圖清單 (Modified Blueprints)**：列出所有新增或修訂的 `.blueprint/` 與 `.scout/` 檔案絕對路徑。
-2. **架構變更摘要 (Architecture Impact)**：簡要說明本次藍圖變動的核心設計、接口修改與依賴調整。
-3. **預計投影映射 (Projection Plan)**：列出藍圖文檔對應至原始碼的路徑映射（如 `.blueprint/foo.md` ➡️ `src/foo.py`）。
-4. **Worktree 資訊**：（若有）確認作業已於 Worktree 路徑下完成。
+2. **藍圖變更包 (Blueprint Delta Manifest)**：
+   - **核心接口與契約變更**：條列新增/修改的方法簽名與 `Do` / `Do NOT` 契約。
+   - **宣告的 Seams 清單**：明確宣告新 seam 的位置與可測試面（供 TDD 工程師直接作為測試依據）。
+   - **預計投影映射 (Projection Plan)**：列出藍圖文檔對應至原始碼的路徑映射（如 `.blueprint/foo.md` ➡️ `src/foo.py`）。
+3. **架構變更摘要 (Architecture Impact)**：簡要說明本次藍圖變動的核心設計與依賴調整。
+4. **快照確認（若為 `--direct` 模式）**：確認已匯出 `.blueprint/.changes.diff`。
+5. **Worktree 資訊**：（若有）確認作業已於 Worktree 路徑下完成。

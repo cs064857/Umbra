@@ -17,15 +17,16 @@ All files and subdirectories placed under `templates/common/skills/` and `templa
 ## Commands
 
 ```bash
-node bin/umbra.js init              # default --opencode → .opencode/
-node bin/umbra.js init --pi         # → .pi/
-node bin/umbra.js update [--opencode|--pi]   # same as init (overwrite)
+node bin/umbra.js init                      # default --opencode → .opencode/
+node bin/umbra.js init --pi                 # → .pi/
+node bin/umbra.js init -e                   # local ignore → add to .git/info/exclude
+node bin/umbra.js update [--opencode|--pi] [-e]   # same as init (overwrite)
 node bin/umbra.js uninstall [--opencode|--pi]
 # after npm i -g <this-repo>: umbra …
 ```
 
 - `init` === `update`. No merge; managed paths are deleted then recopied.
-- Flag must be a key of `TARGETS` (`--opencode` | `--pi`). Unknown flag exits 1.
+- Target flag must be a key of `TARGETS` (`--opencode` | `--pi`). Optional `-e` / `--exclude` adds managed paths to `.git/info/exclude`. Unknown flag exits 1.
 - Verify: run init in a temp cwd, check printed `+ <dir>/…` lines and that `__UMBRA_ROOT__` is gone from installed files.
 
 ## Gotchas agents miss

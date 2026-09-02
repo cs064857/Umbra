@@ -14,6 +14,12 @@ dependencies:
 這個指令強烈要求 AI 系統**不可以**直接搜尋代碼，也**不可以**第一步就動手改代碼。
 一切的修改與設計，都必須先透過閱讀、更新 `.blueprint/` 目錄下的「影子架構」後，再以投影 (Projecting) 的方式作用到專案真實程式碼中。
 
+這個工作流將職責徹底解耦為 4 個獨立角色：
+1. **`umbra-orchestrator` (協調者)**：負責編排全流程、處理旗標與使用者進行溝通 bridge，不直接讀寫藍圖與程式碼。
+2. **`umbra-architecture` (架構師)**：專注於全量/按需閱讀 `.blueprint/` 與 `.scout/`，進行架構推演與藍圖修訂。
+3. **`umbra-reviewer` (審核專家)**：負責審查藍圖品質、可行性與指標最優性，必要時自主修復與優化藍圖。
+4. **`umbra-coder` (工程師)**：負責接收審核後的藍圖並投影回專案原始碼，執行測試驗證。
+
 ## Workflow Entrypoint & Flags
 
 1. 啟動 `umbra-orchestrator` agent。

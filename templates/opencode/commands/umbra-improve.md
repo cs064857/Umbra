@@ -18,7 +18,7 @@ dependencies:
 1. **`umbra-improve-orchestrator` (協調者)**：編排全流程與處理雙重同意關卡（關卡①與關卡②），不直接讀寫藍圖與程式碼。
 2. **`umbra-improve-analyzer` (分析師)**：唯讀掃描源碼與熱點，產出 HTML 報告與深化候選。
 3. **`umbra-architecture` (架構師)**：根據選定的候選演進藍圖並宣告 seam 清單。
-4. **`umbra-reviewer` (藍圖審核專家)**：審查藍圖品質並自主修復。
+4. **`umbra-reviewer` (藍圖審核專家)**：審查藍圖品質與指標最優性並自主修復。
 5. **`umbra-tdd-engineer` (TDD 工程師)**：只寫測試，驗證紅燈 FAIL 證據。
 6. **`umbra-coder` (工程師)**：投影實作使測試轉綠。
 7. **`umbra-code-reviewer` (兩軸審查專家)**：依據 BASE_SHA 與 Spec 進行 Standards + Spec 雙軸審查。

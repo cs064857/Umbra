@@ -28,25 +28,28 @@ permission:
 你將從協調者 (@umbra-orchestrator) 接收到：
 
 1. 本次的業務需求。
-2. 經審核通過的 `.blueprint/**/*.md` 檔案清單與變更摘要。
+2. 經審核定案的**「藍圖定案變更包 (Final Blueprint Delta Manifest)」**與快照檔（`.blueprint/.changes.diff`）路徑。
 3. 藍圖 ➡️ 原始碼的路徑映射 (Projection Plan)。
 4. Worktree 絕對路徑（若本次任務啟用了 `--worktree` 旗標）。
 5. 實作計畫檔案路徑（僅在【高嚴謹模式】下提供，如 `docs/plans/*.md`）。
 
 ## 執行規則
 
-1. **讀取設計與計畫**：
-   - 請詳細讀取清單中所有的藍圖檔案內容。
+1. **開箱即寫，免查 Git 鐵律 (No Git Diff/Status)**：
+   - 你**嚴禁且無須**自行執行 `git status` 或 `git diff` 去查找藍圖修改；Orchestrator 已直接將定案 Delta Manifest 與 `.blueprint/.changes.diff` 快照提供給你。
+   - 直接參照交接的 Delta Manifest 核心接口與 `Do` / `Do NOT` 契約，或直接讀取 `.blueprint/.changes.diff` 快照開工。
+2. **讀取設計與計畫**：
+   - 請詳細讀取清單中涉及變更的藍圖檔案內容或快照 diff。
    - **若收到實作計畫 (`docs/plans/*.md`)**：開啟 `executing-plans` 技能，按計畫中的 Task 項目逐步執行最小實作變更並進行分段 Git Commit。
-2. **對應實作 (Projection)**：
+3. **對應實作 (Projection)**：
    - **工作目錄與 Worktree 鐵律**：若任務提供 Worktree 路徑，**必須在該 Worktree 目錄下進行所有程式碼修改與測試**。
    - 前往專案真實原始碼檔案，尋找藍圖所指向的源代碼檔案。
    - 根據藍圖中的「接口摘要」去新增或修改方法簽名與出入參數。
    - 根據藍圖中的「職責契約」(Do/Do NOT) 去實作邏輯。
    - **絕對嚴禁**在實作中引入藍圖「依賴拓撲」中未記載的其他模組引用。
    - 如果你在寫 Code 的過程中發現：「這個邏輯一定要依賴某個未在藍圖記載的模組才能跑通」，**立刻停止寫字**。請回報給發出任務的協調者，告知藍圖設計不合理需要調回藍圖階段。
-3. **完成與實測驗證 (Strict Verification)**：
+4. **完成與實測驗證 (Strict Verification)**：
    - **Worktree 驗證**：若在 Worktree 中執行，請務必在該 Worktree 內進行編譯、測試與檢查。
    - **若處於【高嚴謹模式】**：準備回報完成前，調用 `verification-before-completion` 技能。透過 `bash` 執行專案編譯或測試指令，取得實際 Terminal Log 證據後方可回報完成。
    - **藍圖雙向同步**：若實作過程中微調了細節，務必同步更新 `.blueprint/` 文檔，確保藍圖與程式碼 100% 一致。
-4. 向 @umbra-orchestrator 回報投影更新狀態、Worktree 路徑（若有）與實測結果。
+5. 向 @umbra-orchestrator 回報投影更新狀態、Worktree 路徑（若有）與實測結果。

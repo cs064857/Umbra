@@ -77,7 +77,9 @@ dependencies:
 - 若候選涉及全新模組：`python __UMBRA_ROOT__/skills/umbra/scripts/scaffold.py <路徑>` 產生空白藍圖。
 - **動手修改藍圖**（必要步驟）：直接編輯 `.blueprint/` 受影響檔案，並在「職責契約/接口摘要/依賴拓撲」中**明確宣告新 seam 的位置與可測試面**（TDD 工程師階段四的唯一依據）。架構變化影響現況時，同步更新 `.scout/` 偵察檔。未確實修改藍圖前嚴禁進入後續階段。
 - 可用 `python __UMBRA_ROOT__/skills/umbra/scripts/visualize.py` 檢視依賴 Mermaid 圖。
-- **檢查 `--direct`**：未加 → 調用 `@umbra-reviewer` 獨立審核與自主修復（完整傳遞：使用者目標、已修改藍圖內容、Worktree 資訊、高嚴謹標記），拿到審查結論後繼續。
+- **檢查 `--direct`**：
+  - **未加 `--direct`**：用 `task` 工具調用 `@umbra-reviewer` 獨立進行指標最優性分析與審核，並自主修復/升級藍圖，取得審查結論。
+  - **加 `--direct`**：跳過審核階段。
 
 ### 階段四：準備實施 (Pre-Implementation Gate)
 

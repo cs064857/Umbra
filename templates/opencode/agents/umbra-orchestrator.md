@@ -35,6 +35,7 @@ dependencies:
 - `--direct`: 直連模式。跳過「階段三：藍圖方案審查 (`@umbra-reviewer`)」，藍圖推演完成後直接進入同意關卡或發派投影。
 - `--all`: 全量 Context 模式。通知 `@umbra-architecture` 採用 Repomix 打包將 `.blueprint/` 與 `.scout/` 一次性全量讀取。
 - `--tdd`: TDD 模式。**僅當**帶有此旗標時，才在藍圖修訂及審核通過後調用 `@umbra-tdd-engineer` 編寫測試並驗證紅燈失敗證據，隨後再派發 `@umbra-coder` 將測試轉綠。若未帶此旗標，則依預設直接派發 `@umbra-coder`。
+- `--teamwork`: 團隊協同模式。啟用雙階段 Teamwork 流水線（藍圖推演領域分流與代碼投影實作均轉為 Batched DAG 批次並行、雙階段對抗審查與 HITL 暫停；**未指定時預設採單流執行以節省 Token**）。
 
 ## ⚠️ 核心鐵律：編排者職責分離 (Orchestrator Separation of Concerns)
 
@@ -59,16 +60,18 @@ dependencies:
    - 若包含 `--ask`，載入 `grilling` 技能進行需求訪談對齊，記錄訪談結論。
 3. **`--tdd` TDD 檢測**：
    - 檢查提示詞或呼叫參數中是否包含 `--tdd` 旗標。
+4. **`--teamwork` 團隊協同檢測**：
+   - 檢查提示詞或呼叫參數中是否包含 `--teamwork` 旗標。若包含，動態載入 `__UMBRA_ROOT__/skills/umbra-teamwork/SKILL.md`。
 
 ### 階段一與階段二：藍圖閱讀與架構推演 (Blueprint Architecture) — 強制發派子代理
 
-- **【第一步強制動作】立刻調用 `@umbra-architecture`**：
-  - **嚴禁 Orchestrator 本體親自讀寫 `.blueprint/` 檔案**。
-  - **必須第一時間**使用 `task` 工具調用 `@umbra-architecture` 子代理，並傳遞：
-    1. 使用者需求與訪談結論。
-    2. 相關旗標（如 `--all`）。
-    3. Worktree 絕對路徑（若啟用）。
-- 等待並接收 `@umbra-architecture` 回傳的變更藍圖清單、架構變更摘要與預計投影映射。
+- **【第一步強制動作】立刻調用 `@umbra-architecture`（或 Teamwork 領域並行推演）**：
+   - **嚴禁 Orchestrator 本體親自讀寫 `.blueprint/` 檔案**。
+   - **預設模式（未帶 `--teamwork`）**：
+     - **必須第一時間**使用 `task` 工具調用 `@umbra-architecture` 子代理，傳遞使用者需求、訪談結論、`--all` 旗標與 Worktree 路徑。
+   - **Teamwork 模式（帶有 `--teamwork` 且屬大型跨領域任務）**：
+     - 依據 `umbra-teamwork` 技能，先透過 `@umbra-blueprint-analyzer` 拆解領域 Bundle，再按 Batch 並行派發多個 `@umbra-architecture` 推演各領域藍圖。
+- 等待並接收變更藍圖清單、架構變更摘要與預計投影映射。
 
 ### 階段三：藍圖方案審查 (Blueprint Review)
 
@@ -79,32 +82,30 @@ dependencies:
       1. 使用者目標與需求。
       2. 經 `@umbra-architecture` 修改的藍圖清單與內容。
       3. Worktree 絕對路徑（若啟用）。
-    - 等待接收 `@umbra-reviewer` 的審查結論（`[APPROVED]` 或 `[APPROVED WITH REPAIRS]`）與自主修復清單。
+    - 等待接收 `@umbra-reviewer` 的審查結論（`[APPROVED]` 或 `[APPROVED WITH REPAIRS]`）、指標最優性分析、自主修復清單與結算的**「藍圖定案變更包 (Final Blueprint Delta Manifest)」**。
 
 ### 階段四：使用者同意關卡 (User Approval Gate) 與 派發投影 (Projection)
 
 1. **使用者同意確認 (User Approval Gate Check)**：
    - **若未包含 `--auto`**：**必須暫停並向使用者展示詳細資訊**：
-     - 修改/審核通過的藍圖清單
-     - 架構變更細節與接口調整
-     - 預計投影映射計畫 (`.blueprint` ➡️ `src`)
-     - 是否使用了 Worktree 或 `--direct` 或 `--tdd`
+     - 修改/審核通過的藍圖清單（來自 Final Blueprint Delta Manifest）
+     - 架構變更細節、接口調整、Do/Do NOT 契約與最優性優化摘要
+     - 預計投影映射計畫 (`.blueprint` ➡️ `src`) 或 Teamwork 批次 DAG 拆解計畫
+     - 是否使用了 Worktree 或 `--direct` 或 `--tdd` 或 `--teamwork`
      - **詢問使用者是否同意執行投影**。等待使用者確認。若使用者反饋需要調整，則退回階段一/二重新派發 `@umbra-architecture`。
    - **若包含 `--auto`**：直接進行投影派發。
-2. **檢查 `--tdd` 旗標派發流程**：
-   - **若包含 `--tdd` 旗標**：
-     1. 使用 `task` 工具調用 `@umbra-tdd-engineer`，傳遞：使用者需求、藍圖變更清單、宣告的 seam/介面清單、Worktree 絕對路徑（若啟用）。
-     2. 接收 `@umbra-tdd-engineer` 回報：測試檔案清單、每個新測試確實失敗的終端證據 (FAIL)。
-     3. 確認紅燈證據成立後，再將測試清單、`TODO(tdd)` 區塊與紅燈證據傳給 `@umbra-coder`。
-   - **若未包含 `--tdd` 旗標（預設）**：
-     - 直接進入步驟 3 派發至 `@umbra-coder`。
-3. **派發投影至 Coder**：
-   - 使用 `task` 工具調用 `@umbra-coder`，傳遞：
-     1. 最終確認的藍圖清單與變更摘要。
-     2. 投影路徑映射。
-     3. TDD 交接資訊（僅 `--tdd` 模式）：測試檔案清單與 `TODO(tdd)` 空殼位置。
-     4. Worktree 絕對路徑（若啟用）。
-     5. 使用者原始需求與驗證要求。
-4. **完成匯報**：
-   - 接收 `@umbra-coder` 的投影成果與測試驗證報告。
+2. **檢查 `--teamwork` 旗標進行分流派發（管線上下文注入，下游 0 指令即刻開工）**：
+   - **若包含 `--teamwork` 旗標（批次並行流水線）**：
+     1. 依據 `umbra-teamwork` 技能將藍圖 Seams 拓撲排序為 Batched DAG（Batch 0, Batch 1...）。
+     2. 針對當前批次，使用 `task` 工具**並行派發**多個 `@teamwork-worker`（或 `@umbra-coder`），各 Worker 隔離於獨立 Context 作業，並注入當前批次對應的藍圖變更與契約。
+     3. （若含 `--tdd`）：先由測試工程師針對該 Seam 編寫紅燈測試，Worker 負責將測試轉綠。
+     4. 產物提交後，依序調用 `@teamwork-spec-reviewer`（Stage 1 規格審查）與 `@teamwork-quality-reviewer`（Stage 2 品質審查）。
+     5. 當前批次全數審查通過後，自動推進至下一批次；若單一節點連續重試 3 次失敗，觸發 HITL 人工介入暫停。
+   - **若未包含 `--teamwork` 旗標（預設單流模式）**：
+     1. **檢查 `--tdd` 旗標**：若包含，調用 `@umbra-tdd-engineer` 先寫紅燈測試，**直接注入 Delta Manifest 中宣告的 Seams 清單與接口契約**，指示其開箱即寫，**嚴禁/無需**自行執行 `git status` 或 `git diff`。
+     2. **派發至 `@umbra-coder`**：調用單一 Coder 進行串列投影實作，**直接傳遞 Delta Manifest 與 `.blueprint/.changes.diff` 快照**，指示其直接依據交接契約與快照實施投影，**嚴禁/無需**自行執行 `git status` 或 `git diff`。
+3. **完成匯報與清理**：
+   - 接收所有投影成果與全域整合測試報告。
+   - 確保藍圖與專案代碼 100% 保持同步（Never-Stale Invariant）。
+   - 若存在 `.blueprint/.changes.diff` 暫存檔，可於此時清理。
    - 整理最終成果並向使用者回報任務完成。
