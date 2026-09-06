@@ -87,5 +87,5 @@ permission:
    - **累計異動檔案清單**：列出經確認/修復/優化後的完整藍圖檔案清單。
    - **核心接口與契約變更**：條列新增/修改的方法簽名與 `Do` / `Do NOT` 契約。
    - **宣告的 Seams 清單**：宣告供 TDD 測試插樁的可測介面位置。
-   - **預計投影映射 (Projection Plan)**：藍圖 ➡️ 原始碼路徑映射（如 `.blueprint/foo.md` ➡️ `src/foo.py`）。
+   - **預計投影映射 (Projection Plan)**：藍圖 ➡️ 原始碼路徑映射（如 `.blueprint/foo.py.md` ➡️ `src/foo.py`，遵循規範雙副檔名）。
    - **快照確認**：確認已將累計 Diff 匯出至 `.blueprint/.changes.diff`。

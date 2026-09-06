@@ -79,7 +79,7 @@ permission:
 2. **藍圖變更包 (Blueprint Delta Manifest)**：
    - **核心接口與契約變更**：條列新增/修改的方法簽名與 `Do` / `Do NOT` 契約。
    - **宣告的 Seams 清單**：明確宣告新 seam 的位置與可測試面（供 TDD 工程師直接作為測試依據）。
-   - **預計投影映射 (Projection Plan)**：列出藍圖文檔對應至原始碼的路徑映射（如 `.blueprint/foo.md` ➡️ `src/foo.py`）。
+   - **預計投影映射 (Projection Plan)**：列出藍圖文檔對應至原始碼的路徑映射（如 `.blueprint/foo.py.md` ➡️ `src/foo.py`，遵循規範雙副檔名）。
 3. **架構變更摘要 (Architecture Impact)**：簡要說明本次藍圖變動的核心設計與依賴調整。
 4. **快照確認（若為 `--direct` 模式）**：確認已匯出 `.blueprint/.changes.diff`。
 5. **Worktree 資訊**：（若有）確認作業已於 Worktree 路徑下完成。

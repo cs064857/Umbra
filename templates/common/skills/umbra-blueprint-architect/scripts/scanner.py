@@ -2,6 +2,10 @@ import os
 import sys
 import fnmatch
 
+def to_posix_path(path_str):
+    """Normalize any path to POSIX forward slash convention."""
+    return path_str.replace('\\', '/')
+
 def parse_ignore_file(ignore_path):
     patterns = []
     if os.path.exists(ignore_path):
@@ -9,6 +13,7 @@ def parse_ignore_file(ignore_path):
             for line in f:
                 line = line.strip()
                 if line and not line.startswith('#'):
+                    line = to_posix_path(line)
                     if line.startswith('/'):
                         line = line[1:]
                     if line.endswith('/'):
@@ -17,9 +22,7 @@ def parse_ignore_file(ignore_path):
     return patterns
 
 def is_ignored(path, root_dir, ignore_patterns):
-    rel_path = os.path.relpath(path, root_dir)
-    # Always normalize path separators for fnmatch
-    rel_path = rel_path.replace(os.sep, '/')
+    rel_path = to_posix_path(os.path.relpath(path, root_dir))
 
     if rel_path == '.' or rel_path == '':
         return False
@@ -51,12 +54,29 @@ def is_ignored(path, root_dir, ignore_patterns):
 
     return False
 
+def clean_legacy_blueprint_collision(rel_path, root_dir):
+    """
+    Remove legacy truncated '.md' file if it collides with standard dual extension '.<ext>.md'.
+    Prevents directory pollution where both 'file.md' and 'file.ts.md' coexist.
+    """
+    blueprint_dir = os.path.join(root_dir, '.blueprint')
+    canonical_blueprint_path = os.path.join(blueprint_dir, rel_path + '.md')
+    legacy_truncated_path = os.path.splitext(os.path.join(blueprint_dir, rel_path))[0] + '.md'
+
+    if legacy_truncated_path != canonical_blueprint_path and os.path.exists(legacy_truncated_path):
+        try:
+            os.remove(legacy_truncated_path)
+        except OSError:
+            pass
+
 def needs_blueprint(src_path, root_dir):
-    rel_path = os.path.relpath(src_path, root_dir)
-    blueprint_path = os.path.join(root_dir, '.blueprint', rel_path)
+    rel_path = to_posix_path(os.path.relpath(src_path, root_dir))
     
-    # Change extension to .md
-    blueprint_path = os.path.splitext(blueprint_path)[0] + '.md'
+    # Clean up legacy collision first (e.g. UserService.md alongside UserService.java.md)
+    clean_legacy_blueprint_collision(rel_path, root_dir)
+    
+    # Standard dual extension: <rel_path>.md (e.g., src/user/UserService.java.md)
+    blueprint_path = os.path.join(root_dir, '.blueprint', os.path.normpath(rel_path) + '.md')
     
     if not os.path.exists(blueprint_path):
         return True
@@ -97,7 +117,9 @@ def scan_project(root_dir, limit=None):
                 continue
                 
             if needs_blueprint(file_path, root_dir):
-                results.append(file_path)
+                # Always return 100% clean, POSIX normalized relative path
+                clean_rel_path = to_posix_path(os.path.relpath(file_path, root_dir))
+                results.append(clean_rel_path)
                 if limit and len(results) >= limit:
                     return results
                     
@@ -108,7 +130,7 @@ if __name__ == "__main__":
         print("Usage: python scanner.py <project_root_dir> [limit]")
         sys.exit(1)
         
-    project_root = sys.argv[1]
+    project_root = os.path.abspath(sys.argv[1])
     limit = int(sys.argv[2]) if len(sys.argv) > 2 else None
     
     files_to_process = scan_project(project_root, limit)

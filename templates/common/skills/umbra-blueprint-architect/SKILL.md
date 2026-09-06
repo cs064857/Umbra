@@ -21,6 +21,31 @@ When generating these blueprint files, you must strictly follow the format below
 3. **嚴格遵循無視規則 (.gitignore & .blueprintignore)**：
    - 務必自動套用並嚴格遵守專案中的 `.gitignore` 與 `.blueprintignore` 無視清單，不得為被忽略的檔案生成藍圖。
 
+## 四大生產重構成熟規範 (Production-Grade Architecture Standards)
+
+為確保藍圖管線工程成熟、安全嚴密、跨平台相容，所有 Blueprint 相關 Agent、腳本與流程必須嚴格遵守以下四項成熟規範：
+
+### 1. 檔案路徑格式：100% 乾淨相對路徑 (Pure Relative Paths)
+- **零環境污染**：所有在 `bundles.json`、`README.md`、CLI 命令、任務派發 prompt 及藍圖報告中的檔案路徑，**必須 100% 採用相對於專案根目錄的乾淨相對路徑**（例如：`src/user/UserService.java`，對應藍圖 `.blueprint/src/user/UserService.java.md`）。
+- **嚴禁本機絕對路徑**：絕對禁止包含磁碟代號（如 `C:/`、`D:/`）或本機使用者路徑（如 `/Users/...`、`/home/...`）。藍圖產物必須可在任意機器、容器或 CI/CD 環境中無縫攜帶與驗證。
+
+### 2. 檔名與代碼衛生：規範的雙副檔名，無重複 (Standard Dual-Extensions & Hygiene)
+- **規範的雙副檔名**：所有原始碼對應的藍圖檔名，必須嚴格保留原始完整檔名與副檔名，並追加 `.md`：
+  - 格式：`<原相對路徑與原副檔名>.md`
+  - 範例：`src/app.ts` ➡️ `.blueprint/src/app.ts.md`；`src/views/Home.vue` ➡️ `.blueprint/src/views/Home.vue.md`；`service/main.py` ➡️ `.blueprint/service/main.py.md`。
+- **嚴禁單副檔名截斷**：絕對禁止將副檔名截斷為 `.md`（如 `app.md`、`Home.md`）。
+- **代碼衛生與清理衝突**：嚴格防禦目錄污染。同一目錄下**嚴禁同時殘留 `.md` 與 `.ts.md` 雙重檔案**。若檢測到歷史舊版截斷的孤兒 `.md` 檔案，必須自動偵測並清理刪除，杜絕重複與髒資料。
+
+### 3. Bundle 規劃：高內聚領域 Bundle，層次分明 (Domain-Driven High-Cohesion Bundles)
+- **拒絕碎片化**：嚴禁將專案隨意切分成 50+ 個僅有 1~2 個檔案的微型碎片 Bundle；嚴禁使用 `bundle_1`、`bundle_2` 等無意義純數字黑盒編號。
+- **領域高內聚聚合**：依據業務領域、核心架構子系統或功能邊界聚合檔案（例如將同一個領域的 Controller、Service、Repository、Model、Types/Utils 歸納於同一個 Bundle），使 Worker 能夠在一個上下文內通盤掌握模組的完整依賴拓撲。
+- **架構層次標準**：中大型專案應收斂劃分為層次分明的高內聚領域 Bundle（典型成熟專案約收斂為 10~25 個領域 Bundle，如成熟版 19 個高內聚領域 Bundle）。
+- **語意化命名**：所有 Bundle ID 必須具備明確的語意架構標籤（如 `auth-identity`, `billing-engine`, `data-pipeline`, `infra-persistence`, `ui-dashboard`）。
+
+### 4. 跨平台路徑防禦：強制 POSIX 正斜線 `/` 標準化 (POSIX Path Normalization)
+- **全路徑正規化**：無論執行環境為 Windows、macOS 或 Linux，所有檔案路徑在解析、比較、寫入 JSON（`bundles.json`）及 Markdown（`README.md`）之前，**必須強制標準化為 POSIX 正斜線 `/`**（將所有 `\` 替換為 `/`）。
+- **避免逸出字元陷阱**：杜絕 Windows 反斜線 `\` 進入 JSON 字串或造成 Git/跨平台解析失敗。
+
 ## Format Guidelines
 
 Each Blueprint markdown file MUST contain the following three sections. Do not include verbose pseudo-code or the actual implementation code. **Always output in Traditional Chinese (繁體中文).**
