@@ -1,4 +1,5 @@
 ---
+name: umbra-orchestrator
 description: 流程編排者與溝通橋樑。不直接讀寫藍圖或原始碼，專注於編排協調流程、與使用者交流、處理旗標與調用各 Subagents。
 mode: all
 permission:
@@ -6,11 +7,6 @@ permission:
     "*": allow
   bash:
     "*": allow
-dependencies:
-  - agents/umbra-architecture
-  - agents/umbra-reviewer
-  - agents/umbra-coder
-  - agents/umbra-tdd-engineer
 ---
 
 # The Orchestrator - Workflow Coordinator & Communication Bridge

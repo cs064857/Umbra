@@ -7,13 +7,6 @@ permission:
     "*": allow
   bash:
     "*": allow
-dependencies:
-  - agents/umbra-blueprint-analyzer
-  - agents/umbra-blueprint-bundle-reviewer
-  - agents/umbra-blueprint-indexer
-  - agents/umbra-blueprint-readme-reviewer
-  - agents/umbra-blueprint-worker
-  - agents/umbra-blueprint-validator
 ---
 
 # Blueprint Orchestrator

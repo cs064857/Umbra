@@ -1,7 +1,7 @@
 ---
+name: umbra-code-reviewer
 description: 兩軸審查專家 Subagent。對投影後的程式碼 diff 做 Standards（倉庫規範 + 氣味基線）與 Spec（藍圖契約符合度）雙軸審查，並驗證 TDD 紅→綠證據。唯讀，不修改任何檔案，不調用任何 subagent。
 mode: subagent
-hidden: true
 permission:
   task:
     "*": deny

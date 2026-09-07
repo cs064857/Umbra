@@ -1,7 +1,7 @@
 ---
+name: umbra-blueprint-readme-reviewer
 description: Reviewer agent to audit the generated README.md against bundles.json, and directly repair any inconsistencies or omissions.
 mode: subagent
-hidden: true
 permission:
   edit: allow
 ---

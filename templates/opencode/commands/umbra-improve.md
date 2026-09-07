@@ -1,13 +1,6 @@
 ---
 description: 觸發「影子架構改善 (Umbra Improve)」工作流，獨立角色分工 (Orchestrator 協調 / Analyzer 分析 / Architecture 藍圖 / Reviewer 審查 / TDD 測試 / Coder 投影 / Code Reviewer 雙軸審查)。支援 --scope、--auto、--worktree、--ask、--direct、--all 旗標。
 agent: umbra-improve-orchestrator
-dependencies:
-  - agents/umbra-improve-analyzer
-  - agents/umbra-architecture
-  - agents/umbra-reviewer
-  - agents/umbra-tdd-engineer
-  - agents/umbra-coder
-  - agents/umbra-code-reviewer
 ---
 
 # 🪄 Command: /umbra-improve

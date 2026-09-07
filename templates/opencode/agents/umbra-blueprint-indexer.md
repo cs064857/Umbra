@@ -1,7 +1,7 @@
 ---
+name: umbra-blueprint-indexer
 description: Hidden subagent responsible for receiving the static analysis bundles, saving them to disk, and generating a high-density architecture README for the .blueprint directory.
 mode: subagent
-hidden: true
 permission:
   bash:
     "*": allow

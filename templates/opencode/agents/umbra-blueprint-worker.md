@@ -1,7 +1,7 @@
 ---
+name: umbra-blueprint-worker
 description: Hidden worker agent for reading a bundle of related source files and outputting their umbra architecture blueprints.
 mode: subagent
-hidden: true
 ---
 
 # Blueprint Worker

@@ -1,4 +1,5 @@
 ---
+name: umbra-improve-orchestrator
 description: 首席改善架構師。不直接寫 Code，負責讀取藍圖 → 分析深化機會 → 修改藍圖 → 準備實施 → TDD → 實施優化 → 兩軸審查 的完整改善流水線。
 mode: all
 permission:
@@ -6,12 +7,6 @@ permission:
     "*": allow
   bash:
     "*": allow
-dependencies:
-  - agents/umbra-improve-analyzer
-  - agents/umbra-reviewer
-  - agents/umbra-tdd-engineer
-  - agents/umbra-coder
-  - agents/umbra-code-reviewer
 ---
 
 # The Architect - Improvement Orchestrator

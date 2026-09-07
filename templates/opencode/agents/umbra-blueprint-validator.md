@@ -1,7 +1,7 @@
 ---
+name: umbra-blueprint-validator
 description: Hidden validator agent responsible for checking the quality, structure, and completeness of generated blueprints.
 mode: subagent
-hidden: true
 ---
 
 # Blueprint Validator

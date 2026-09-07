@@ -1,7 +1,7 @@
 ---
+name: umbra-blueprint-bundle-reviewer
 description: Reviewer agent to audit the generated bundles JSON against scanned files, and directly repair any inconsistencies or omissions.
 mode: subagent
-hidden: true
 ---
 
 # Blueprint Bundle Reviewer

@@ -1,7 +1,7 @@
 ---
+name: umbra-blueprint-analyzer
 description: Analyzer agent to statically analyze a list of file paths and group highly related files into bundles for parallel processing.
 mode: subagent
-hidden: true
 ---
 
 # Blueprint Analyzer

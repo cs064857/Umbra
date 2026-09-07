@@ -1,7 +1,7 @@
 ---
+name: umbra-coder
 description: 資深工程師 Subagent。接收更新後的藍圖，並負責將意圖投影至原始碼。
 mode: subagent
-hidden: true
 permission:
   task:
     "*": allow

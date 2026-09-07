@@ -1,11 +1,6 @@
 ---
 description: 觸發「影子架構 (The Architect)」工作流，4 角色分工 (Orchestrator 協調 / Architecture 藍圖 / Reviewer 審查 / Coder 投影)。支援 --auto、--worktree、--ask、--direct、--all、--tdd、--teamwork 旗標。
 agent: umbra-orchestrator
-dependencies:
-  - agents/umbra-architecture
-  - agents/umbra-reviewer
-  - agents/umbra-coder
-  - agents/umbra-tdd-engineer
 ---
 
 # 🪄 Command: /umbra

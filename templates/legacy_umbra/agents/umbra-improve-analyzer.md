@@ -1,7 +1,7 @@
 ---
+name: umbra-improve-analyzer
 description: 架構分析師。讀取藍圖與真實源碼，嗅出淺模組與深化機會，產出暫存 HTML 報告與候選清單。唯讀，不修改任何檔案，不調用任何 subagent。
 mode: subagent
-hidden: true
 permission:
   task:
     "*": deny

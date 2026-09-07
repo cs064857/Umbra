@@ -1,7 +1,7 @@
 ---
+name: umbra-reviewer
 description: 藍圖審核專家。在投影實作前審查修改後的藍圖方案是否能達到目標、修復問題，並依具體指標（防 N+1、減 DB 消耗、優先打 Redis 等）深度分析與自主修復/升級為最優方案，不調用任何 subagent。
 mode: subagent
-hidden: true
 permission:
   task:
     "*": allow
