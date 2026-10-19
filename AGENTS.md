@@ -17,15 +17,20 @@ All files and subdirectories placed under `templates/common/skills/` and `templa
 ## Commands
 
 ```bash
-node bin/umbra.js init                      # default --opencode → .opencode/
+node bin/umbra.js init                      # default --opencode → .opencode/ (registers in ~/.umbra/projects.json)
 node bin/umbra.js init --pi                 # → .pi/
 node bin/umbra.js init -e                   # local ignore → add to .git/info/exclude
-node bin/umbra.js update [--opencode|--pi] [-e]   # same as init (overwrite)
+node bin/umbra.js update [--opencode|--pi] [-e]   # same as init (overwrite current project)
+node bin/umbra.js update --all              # one-click update all registered projects
+node bin/umbra.js update --all --scan <dir> # auto-discover existing projects under <dir> & update all
+node bin/umbra.js scan [dir]                # scan & register existing Umbra projects into ~/.umbra/projects.json
+node bin/umbra.js list                      # list all registered projects
 node bin/umbra.js uninstall [--opencode|--pi]
 # after npm i -g <this-repo>: umbra …
 ```
 
-- `init` === `update`. No merge; managed paths are deleted then recopied.
+- `init` === `update`. No merge; managed paths are deleted then recopied. Automatically registers the project in `~/.umbra/projects.json`.
+- `update --all` (`-a`) iterates through all registered projects in `~/.umbra/projects.json`, preserving each project's `target` and `exclude` configuration. Combine with `--scan [dir]` (`-s`) to auto-discover legacy projects first.
 - Target flag must be a key of `TARGETS` (`--opencode` | `--pi`). Optional `-e` / `--exclude` adds managed paths to `.git/info/exclude`. Unknown flag exits 1.
 - Verify: run init in a temp cwd, check printed `+ <dir>/…` lines and that `__UMBRA_ROOT__` is gone from installed files.
 

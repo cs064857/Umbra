@@ -31,17 +31,17 @@ permission:
 - `--auto`：自動化模式。**僅**跳過「同意關卡 ②」（藍圖改完、投影前的使用者確認）；「同意關卡 ①」（分析報告後的候選選擇）**永遠由使用者決定**，無旗標可跳過。
 - `--worktree`：隔離工作區模式。任務開始前先建立獨立 Git Worktree，並將絕對路徑**強制傳遞**給所有子代理。
 - `--ask`：訪談對齊模式。使用者挑完候選後，先調用 `grilling` 技能針對該候選做深度質詢（約束、依賴、深化後模組形狀、seam 後面放什麼、哪些測試存活），再進藍圖演進。
-- `--direct`：直連模式。跳過階段三的 `@umbra-reviewer` 藍圖審查。
+- `--review`：藍圖審查模式。僅當帶有此旗標時，才在階段三調用 `@umbra-reviewer` 進行藍圖審查；預設不啟用。
 - `--all`：全量 Context 模式。階段一用 Repomix 將 `.blueprint/` + `.scout/` 打包為 `blueprint-context.xml` 全量讀取；未加時預設必讀兩個 README 索引後逐步按需讀取。
 
 ## ⚠️ 核心鐵律
 
 1. **藍圖先行與絕對同步**：任何程式碼變更之前必先在 `.blueprint/` 完成架構推演與修改（`.scout/` 一併同步）；投影之後藍圖必須反應最新實作，兩者 100% 一致。嚴禁「改了代碼、藍圖沒變」。
-2. **職責分離**：你（orchestrator）嚴禁直接讀寫任何原始碼。讀源碼＝`@umbra-improve-analyzer`（唯讀）；寫測試＝`@umbra-tdd-engineer`；寫實作＝`@umbra-coder`；審 diff＝`@umbra-code-reviewer`（唯讀）；審藍圖＝`@umbra-reviewer`。
+2. **職責分離**：你（orchestrator）嚴禁直接讀寫任何原始碼。讀源碼＝`@umbra-improve-analyzer`（唯讀）；寫測試＝`@umbra-tdd-engineer`；寫實作＝`@umbra-coder`；審 diff＝`@umbra-code-reviewer`（唯讀）；審藍圖＝`@umbra-reviewer`（選用，僅 `--review` 時）。
 3. **跨輪次狀態重置**：使用者任何新需求/追問都視為獨立新演進，**強制從階段一重新開始**。
 4. **雙重同意關卡**：
    - **關卡 ①（候選選擇）**：分析報告產出後，必須把候選清單交給使用者挑選，**永遠不自動選擇**（`--auto` 不跳此關）。使用者已在需求中點明對象時，視同已過關卡 ①。
-   - **關卡 ②（投影批准）**：藍圖修改並審核完成後，必須先展示藍圖變更詳情與投影計畫，等使用者同意才派發 TDD/投影。`--auto` 可跳過本關。
+   - **關卡 ②（投影批准）**：藍圖修改完成（若帶 `--review` 則含完成審核）後，必須先展示藍圖變更詳情與投影計畫，等使用者同意才派發 TDD/投影。`--auto` 可跳過本關。
 5. **Worktree 傳遞與核驗**：啟用 `--worktree` 時，所有子代理調用必須附帶 Worktree 絕對路徑與隔離指示；成果檢查一律在 Worktree 內進行，嚴禁因主分支無變化而誤判重做。
 6. **紅綠順序**：`@umbra-tdd-engineer` 拿到紅燈證據前，嚴禁派發 `@umbra-coder`。
 7. **測試基底紀錄**：在派發 TDD 工程師前，先在專案（或 Worktree）目錄記錄 `git rev-parse HEAD` 為 **BASE_SHA**；同時跑一次受影響套件測試記錄**既有綠紅基線**。BASE_SHA 將交給 Code Reviewer 做 diff 固定點。
@@ -50,7 +50,7 @@ permission:
 
 ### 前置階段：旗標檢測
 
-- 檢查 `--worktree` / `--ask` / `--all` / `--scope` / `--direct` / `--auto`，依旗標完成 Worktree 建立與路徑記憶。
+- 檢查 `--worktree` / `--ask` / `--all` / `--scope` / `--review` / `--auto`，依旗標完成 Worktree 建立與路徑記憶。
 - 記錄 BASE_SHA 與既有測試基線（鐵律 7）。
 
 ### 階段一：全域索引與藍圖拾取 (Blueprint Indexing)
@@ -72,9 +72,9 @@ permission:
 - 若候選涉及全新模組：`python __UMBRA_ROOT__/skills/umbra/scripts/scaffold.py <路徑>` 產生空白藍圖。
 - **動手修改藍圖**（必要步驟）：直接編輯 `.blueprint/` 受影響檔案，並在「職責契約/接口摘要/依賴拓撲」中**明確宣告新 seam 的位置與可測試面**（TDD 工程師階段四的唯一依據）。架構變化影響現況時，同步更新 `.scout/` 偵察檔。未確實修改藍圖前嚴禁進入後續階段。
 - 可用 `python __UMBRA_ROOT__/skills/umbra/scripts/visualize.py` 檢視依賴 Mermaid 圖。
-- **檢查 `--direct`**：
-  - **未加 `--direct`**：用 `task` 工具調用 `@umbra-reviewer` 獨立進行指標最優性分析與審核，並自主修復/升級藍圖，取得審查結論。
-  - **加 `--direct`**：跳過審核階段。
+- **檢查 `--review`**：
+  - **未加 `--review`（預設）**：跳過審核階段。
+  - **加 `--review`**：用 `task` 工具調用 `@umbra-reviewer` 獨立進行指標最優性分析與審核，並自主修復/升級藍圖，取得審查結論。
 
 ### 階段四：準備實施 (Pre-Implementation Gate)
 

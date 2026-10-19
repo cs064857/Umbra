@@ -1,10 +1,32 @@
 #!/usr/bin/env node
 // ponytail: multi-target copy; --opencode (default) | --pi
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { execSync } = require("node:child_process");
 
 const ROOT = path.join(__dirname, "..", "templates");
+const UMBRA_REPO_ROOT = path.resolve(__dirname, "..");
+const REGISTRY_DIR = path.join(os.homedir(), ".umbra");
+const REGISTRY_FILE = path.join(REGISTRY_DIR, "projects.json");
+const SCAN_SKIP_DIRS = new Set([
+  "node_modules",
+  ".git",
+  ".opencode",
+  ".pi",
+  ".blueprint",
+  ".scout",
+  "dist",
+  "build",
+  "out",
+  ".next",
+  ".nuxt",
+  "target",
+  "vendor",
+  ".venv",
+  "venv",
+  "__pycache__",
+]);
 
 /** @type {Record<string, { dir: string, done: string, categories: { from: string, to: string }[] }>} */
 const TARGETS = {
@@ -58,12 +80,17 @@ function usage() {
   console.log(`umbra — install Umbra into a project agent dir
 
 Usage:
-  umbra init [--opencode|--pi] [-e|--exclude]     Copy templates (default: --opencode)
-  umbra update [--opencode|--pi] [-e|--exclude]   Overwrite managed files
-  umbra uninstall [--opencode|--pi]               Remove managed files only
+  umbra init [--opencode|--pi] [-e|--exclude]             Copy templates (default: --opencode)
+  umbra update [--opencode|--pi] [-e|--exclude]           Overwrite managed files in current project
+  umbra update --all [-s|--scan [dir]] [--opencode|--pi]  One-click update ALL registered projects
+  umbra scan [dir]                                        Auto-discover existing Umbra projects under dir
+  umbra list                                              List all registered Umbra projects
+  umbra uninstall [--opencode|--pi]                       Remove managed files & unregister project
 
 Flags:
   --opencode, --pi    Target agent dir (default: --opencode)
+  -a, --all           Apply update across all registered projects (~/.umbra/projects.json)
+  -s, --scan [dir]    Scan directory tree to discover & register existing Umbra projects
   -e, --exclude, -i   Add managed files to .git/info/exclude (local ignore)
 
 Install:
@@ -74,26 +101,40 @@ Install:
 
 function parseArgs(argv) {
   const flags = argv.filter((a) => a.startsWith("-"));
-  const cmd = argv.find((a) => !a.startsWith("-")) || "help";
+  const positionals = argv.filter((a) => !a.startsWith("-"));
+  const cmd = positionals[0] || "help";
+  const dirArg = positionals[1] || null;
   let target = "opencode";
+  let targetExplicit = false;
   let exclude = false;
+  let all = false;
+  let scan = false;
 
   for (const f of flags) {
-    if (f === "--help" || f === "-h") return { cmd: "help", target, exclude };
+    if (f === "--help" || f === "-h") return { cmd: "help", target, targetExplicit, exclude, all, scan, dirArg };
     if (f === "-e" || f === "--exclude" || f === "-i" || f === "--gitignore" || f === "-l" || f === "--local") {
       exclude = true;
+      continue;
+    }
+    if (f === "-a" || f === "--all") {
+      all = true;
+      continue;
+    }
+    if (f === "-s" || f === "--scan") {
+      scan = true;
       continue;
     }
 
     const name = f.replace(/^--?/, "");
     if (TARGETS[name]) {
       target = name;
+      targetExplicit = true;
     } else {
-      console.error(`unknown flag: ${f} (want --${Object.keys(TARGETS).join(" | --")} | -e | --exclude)`);
+      console.error(`unknown flag: ${f} (want --${Object.keys(TARGETS).join(" | --")} | -a | --all | -s | --scan | -e | --exclude)`);
       process.exit(1);
     }
   }
-  return { cmd, target, exclude };
+  return { cmd, target, targetExplicit, exclude, all, scan, dirArg };
 }
 
 function cp(src, dst, replace) {
@@ -179,19 +220,33 @@ function ensureGitIgnore(cwd) {
   }
 }
 
-function ensureGitExclude(cwd, targetDir) {
+function resolveGitDir(cwd) {
   const gitPath = path.join(cwd, ".git");
-  if (!fs.existsSync(gitPath)) return;
+  if (!fs.existsSync(gitPath)) return null;
 
-  let gitDir = gitPath;
   const st = fs.statSync(gitPath);
   if (st.isFile()) {
     const content = fs.readFileSync(gitPath, "utf8").trim();
     const match = content.match(/^gitdir:\s*(.+)$/i);
     if (match) {
-      gitDir = path.isAbsolute(match[1]) ? match[1] : path.resolve(cwd, match[1]);
+      return path.isAbsolute(match[1]) ? match[1] : path.resolve(cwd, match[1]);
     }
   }
+  return gitPath;
+}
+
+function hasGitExclude(cwd, targetDir) {
+  const gitDir = resolveGitDir(cwd);
+  if (!gitDir) return false;
+  const excludePath = path.join(gitDir, "info", "exclude");
+  if (!fs.existsSync(excludePath)) return false;
+  const content = fs.readFileSync(excludePath, "utf8");
+  return content.includes(`${targetDir}/`);
+}
+
+function ensureGitExclude(cwd, targetDir) {
+  const gitDir = resolveGitDir(cwd);
+  if (!gitDir) return;
 
   const infoDir = path.join(gitDir, "info");
   fs.mkdirSync(infoDir, { recursive: true });
@@ -218,7 +273,131 @@ function ensureGitExclude(cwd, targetDir) {
   }
 }
 
-function install(cwd, targetName, exclude) {
+function normalizeProjectKey(p) {
+  const resolved = path.resolve(p);
+  return process.platform === "win32" ? resolved.toLowerCase() : resolved;
+}
+
+function loadRegistry() {
+  if (!fs.existsSync(REGISTRY_FILE)) return [];
+  try {
+    const data = JSON.parse(fs.readFileSync(REGISTRY_FILE, "utf8"));
+    return Array.isArray(data.projects) ? data.projects : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveRegistry(projects) {
+  fs.mkdirSync(REGISTRY_DIR, { recursive: true });
+  fs.writeFileSync(REGISTRY_FILE, JSON.stringify({ projects }, null, 2) + "\n", "utf8");
+}
+
+function registerProject(cwd, targetName, exclude) {
+  const resolvedPath = path.resolve(cwd);
+  const key = normalizeProjectKey(resolvedPath);
+  const projects = loadRegistry();
+  const idx = projects.findIndex((p) => normalizeProjectKey(p.path) === key && p.target === targetName);
+  const entry = {
+    path: resolvedPath,
+    target: targetName,
+    exclude: Boolean(exclude),
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (idx >= 0) {
+    projects[idx] = entry;
+  } else {
+    projects.push(entry);
+  }
+  saveRegistry(projects);
+}
+
+function unregisterProject(cwd, targetName) {
+  const key = normalizeProjectKey(cwd);
+  const projects = loadRegistry();
+  const filtered = projects.filter((p) => !(normalizeProjectKey(p.path) === key && p.target === targetName));
+  if (filtered.length !== projects.length) {
+    saveRegistry(filtered);
+  }
+}
+
+function detectTargetsInDir(dir) {
+  if (normalizeProjectKey(dir) === normalizeProjectKey(UMBRA_REPO_ROOT)) return [];
+  const found = [];
+  for (const [targetName, t] of Object.entries(TARGETS)) {
+    const markerA = path.join(dir, t.dir, "agents", "umbra-orchestrator.md");
+    const markerB = path.join(dir, t.dir, "rules", "umbra.md");
+    if (fs.existsSync(markerA) || fs.existsSync(markerB)) {
+      const exclude = hasGitExclude(dir, t.dir);
+      found.push({ target: targetName, exclude });
+    }
+  }
+  return found;
+}
+
+function scanProjects(rootDir, maxDepth = 5) {
+  const startDir = path.resolve(rootDir);
+  if (!fs.existsSync(startDir)) {
+    console.error(`Directory not found: ${startDir}`);
+    process.exit(1);
+  }
+
+  console.log(`Scanning for Umbra-configured projects under: ${startDir} ...`);
+  const discovered = [];
+
+  function walk(currentDir, depth) {
+    if (depth > maxDepth) return;
+    const detected = detectTargetsInDir(currentDir);
+    for (const { target, exclude } of detected) {
+      registerProject(currentDir, target, exclude);
+      discovered.push({ path: currentDir, target, exclude });
+    }
+
+    let entries = [];
+    try {
+      entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    } catch (e) {
+      return;
+    }
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      if (SCAN_SKIP_DIRS.has(entry.name) || entry.name.startsWith(".")) continue;
+      walk(path.join(currentDir, entry.name), depth + 1);
+    }
+  }
+
+  walk(startDir, 0);
+
+  if (discovered.length === 0) {
+    console.log("No Umbra projects discovered in scan.");
+  } else {
+    for (const item of discovered) {
+      console.log(`✓ Registered: ${item.path} (${item.target}${item.exclude ? ", exclude" : ""})`);
+    }
+    console.log(`\nRegistered ${discovered.length} project target(s) in ${REGISTRY_FILE}`);
+  }
+  return discovered;
+}
+
+function listProjects() {
+  const projects = loadRegistry();
+  if (projects.length === 0) {
+    console.log(`No registered Umbra projects yet (${REGISTRY_FILE}).`);
+    console.log(`Tip: run 'umbra scan <workspace-dir>' to auto-discover existing projects, or 'umbra init' inside a project.`);
+    return;
+  }
+
+  console.log(`Registered Umbra projects (${REGISTRY_FILE}):\n`);
+  for (const p of projects) {
+    const exists = fs.existsSync(p.path);
+    const status = exists ? "ok" : "missing";
+    console.log(`  • ${p.path}  [--${p.target}${p.exclude ? " -e" : ""}]  (${status})`);
+  }
+}
+
+function install(cwd, targetName, exclude, opts = {}) {
   const t = TARGETS[targetName];
   const destRoot = path.join(cwd, t.dir);
   const replace = { __UMBRA_ROOT__: t.dir };
@@ -236,12 +415,18 @@ function install(cwd, targetName, exclude) {
   }
 
   ensureRepomixConfig(cwd);
-  ensureRepomixInstalled();
+  if (!opts.skipRepomixCheck) {
+    ensureRepomixInstalled();
+  }
   ensureGitIgnore(cwd);
 
   if (exclude) {
     ensureGitExclude(cwd, t.dir);
   }
+
+  registerProject(cwd, targetName, exclude);
+
+  if (opts.batchMode) return;
 
   const isGit = fs.existsSync(path.join(cwd, ".git"));
 
@@ -264,6 +449,56 @@ function install(cwd, targetName, exclude) {
   }
 }
 
+function updateAllProjects({ targetFilter, forceExclude, scan, scanDir, cwd }) {
+  if (scan) {
+    scanProjects(scanDir || cwd);
+    console.log("");
+  } else {
+    const cwdDetected = detectTargetsInDir(cwd);
+    for (const { target, exclude } of cwdDetected) {
+      registerProject(cwd, target, exclude);
+    }
+  }
+
+  const projects = loadRegistry();
+  if (projects.length === 0) {
+    console.log(`No registered Umbra projects found in ${REGISTRY_FILE}.`);
+    console.log(`Run 'umbra scan <workspace-dir>' or 'umbra update --all --scan <workspace-dir>' to discover existing projects.`);
+    return;
+  }
+
+  ensureRepomixInstalled();
+
+  const kept = [];
+  let updatedCount = 0;
+
+  for (const p of projects) {
+    if (!fs.existsSync(p.path)) {
+      console.warn(`- skip missing project (removed from registry): ${p.path}`);
+      continue;
+    }
+
+    if (targetFilter && p.target !== targetFilter) {
+      kept.push(p);
+      continue;
+    }
+
+    const useExclude = forceExclude ? true : Boolean(p.exclude) || hasGitExclude(p.path, TARGETS[p.target]?.dir || ".opencode");
+    console.log(`\n=== Updating ${p.path} (--${p.target}${useExclude ? " -e" : ""}) ===`);
+    install(p.path, p.target, useExclude, { skipRepomixCheck: true, batchMode: true });
+    kept.push({
+      path: path.resolve(p.path),
+      target: p.target,
+      exclude: useExclude,
+      updatedAt: new Date().toISOString(),
+    });
+    updatedCount++;
+  }
+
+  saveRegistry(kept);
+  console.log(`\n✓ Successfully updated ${updatedCount} project(s)!`);
+}
+
 function uninstall(cwd, targetName) {
   const t = TARGETS[targetName];
   const destRoot = path.join(cwd, t.dir);
@@ -274,11 +509,28 @@ function uninstall(cwd, targetName) {
     rm(dst);
     console.log(`- ${t.dir}/${to.replace(/\\/g, "/")}`);
   }
+  unregisterProject(cwd, targetName);
 }
 
-const { cmd, target, exclude } = parseArgs(process.argv.slice(2));
+const { cmd, target, targetExplicit, exclude, all, scan, dirArg } = parseArgs(process.argv.slice(2));
 const cwd = process.cwd();
 
-if (cmd === "init" || cmd === "update") install(cwd, target, exclude);
-else if (cmd === "uninstall") uninstall(cwd, target);
-else usage();
+if (cmd === "scan") {
+  scanProjects(dirArg || cwd);
+} else if (cmd === "list" || cmd === "ls") {
+  listProjects();
+} else if (cmd === "update" && all) {
+  updateAllProjects({
+    targetFilter: targetExplicit ? target : null,
+    forceExclude: exclude,
+    scan,
+    scanDir: dirArg,
+    cwd,
+  });
+} else if (cmd === "init" || cmd === "update") {
+  install(cwd, target, exclude);
+} else if (cmd === "uninstall") {
+  uninstall(cwd, target);
+} else {
+  usage();
+}

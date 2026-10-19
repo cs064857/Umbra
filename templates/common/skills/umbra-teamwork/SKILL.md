@@ -40,8 +40,9 @@ description: Umbra 影子架構之雙階段團隊協同 (Teamwork) 執行規範�
 - 對於同一個 Batch 的所有領域，Orchestrator 使用 `task` 工具**同時並行派發** `@umbra-architecture`。
 - 每個 Sub-Architect 僅在指派的藍圖領域目錄內作業，推演架構、更新藍圖並明確宣告接口 Seam（方法簽名、出入參數、職責契約 Do/Do NOT 與依賴拓撲）。
 
-### 3. 全域架構對抗審查 (Cross-Domain Review Gate)
-- 所有領域藍圖完成後，統一交由 `@umbra-reviewer` 進行全域審查：
+### 3. 全域架構對抗審查 (Cross-Domain Review Gate，選用 — 僅 `--review` 時啟用)
+- **預設行為（未帶 `--review`）**：所有領域藍圖推演完成後，直接彙整各領域變更包並進入使用者同意關卡（User Approval Gate）。
+- **啟用 `--review` 時**：所有領域藍圖完成後，統一交由 `@umbra-reviewer` 進行全域審查：
   - **閉環驗證**：檢查跨領域 Seam 調用是否皆有對應宣告，無黑盒懸空依賴。
   - **指標最優性**：審核是否具備 N+1 查詢防護、快取利用最優化、資料庫連接減量等。
   - 審查通過後，藍圖正式定稿並向使用者匯報（User Approval Gate）。

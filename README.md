@@ -15,11 +15,22 @@ npx --yes github:YOU/umbra init --pi
 
 ```bash
 cd your-repo
-umbra init              # default → .opencode/
+umbra init              # default → .opencode/ (auto-registers in ~/.umbra/projects.json)
 umbra init --opencode   # same
 umbra init --pi         # → .pi/ (Pi Coding Agent)
 umbra update --pi       # overwrite managed files for that target
-umbra uninstall --pi    # remove only umbra-managed files for that target
+umbra uninstall --pi    # remove only umbra-managed files & unregister
+```
+
+## Multi-project one-click update
+
+Every `umbra init` / `umbra update` records the project path, target, and `-e` setting in `~/.umbra/projects.json`.
+
+```bash
+umbra list                                  # view all registered projects
+umbra scan G:\MyProgram                     # auto-discover pre-existing Umbra projects under a folder
+umbra update --all                          # one-click update ALL registered projects
+umbra update --all --scan G:\MyProgram      # discover + update all in one step
 ```
 
 | Flag | Dest | Agents | Entry |

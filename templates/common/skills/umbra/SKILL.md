@@ -20,17 +20,17 @@ description: 影子架構 (Umbra) 工作流核心技能。將「工程意圖」�
 - `--auto`：自動續行派發投影，跳過藍圖修改後的使用者同意關卡。
 - `--worktree`：於任務開始前開啟獨立 Git Worktree，避免影響主分支 (`master`/`main`)。必須記錄該 Worktree 目錄絕對路徑，後續所有投影實作與成果檢查**均必須在此 Worktree 目錄內進行**，嚴禁因主分支未變更而誤判為未完成並盲目重做。
 - `--ask`：在藍圖推演前先調用 `grilling` 技能進行需求質詢與訪談對齊。
-- `--direct`：跳過 `@umbra-reviewer` 藍圖審查階段，直接推進至確認或投影。
+- `--review`：啟用 `@umbra-reviewer` 藍圖審查階段（預設為不啟用，藍圖推演完成後直接推進至確認或投影）。
 - `--all`：強制使用 Repomix 將 `.blueprint/` 與 `.scout/` 打包為 `blueprint-context.xml` 並一次性全量讀取；未加此旗標時預設逐步按需讀取（大專案建議預設以省 context）。
 - `--tdd`：TDD 模式。僅當此旗標存在時，`umbra-orchestrator` 才會調用 TDD 工程師編寫紅燈測試；否則直接進行投影實作。
 
-## 🤖 解耦四角色分工與派發地圖 (Four-Role Decoupled Dispatch Map)
+## 🤖 解耦角色分工與派發地圖 (Decoupled Role Dispatch Map)
 
-Umbra 採用嚴格的角色與職責解耦架構：
+Umbra 採用嚴格的角色與職責解耦架構（預設不需要 `@umbra-reviewer`，按需以 `--review` 啟用）：
 1. **`umbra-orchestrator` (協調者與溝通橋樑)**：專注於全流程編排、旗標處理與使用者同意關卡溝通。**嚴禁由 Orchestrator 本體親自讀寫藍圖或原始碼**。
-2. **`@umbra-architecture` (藍圖架構師 Subagent)**：由 Orchestrator 使用 `task` 工具調用。專注於全量/按需閱讀 `.blueprint/` 與 `.scout/`，進行架構推演、藍圖修改與 seam 宣告。
-3. **`@umbra-reviewer` (藍圖審核專家 Subagent)**：由 Orchestrator 使用 `task` 工具調用（除非 `--direct`）。專注於藍圖品質、可行性與方案最優性審查（含指標分析、避免 N+1、減少 DB 消耗、優先打 Redis 等），發現缺陷或更優方案時自主修復與優化。
-4. **`@umbra-coder` (資深工程師 Subagent)**：由 Orchestrator 使用 `task` 工具調用。接收審核通過的藍圖，將意圖投影至專案原始碼，並執行測試與編譯驗證。
+2. **`@umbra-architecture` (藍圖架構師 Subagent)**：由 Orchestrator 使用 `task` 工具調用。專注於全量/按需閱讀 `.blueprint/` 與 `.scout/`，進行架構推演、藍圖修改、seam 宣告與匯出定案快照。
+3. **`@umbra-reviewer` (藍圖審核專家 Subagent，選用 — 僅 `--review` 時啟用)**：僅當帶有 `--review` 旗標時由 Orchestrator 使用 `task` 工具調用。專注於藍圖品質、可行性與方案最優性審查（含指標分析、避免 N+1、減少 DB 消耗、優先打 Redis 等），發現缺陷或更優方案時自主修復與優化。
+4. **`@umbra-coder` (資深工程師 Subagent)**：由 Orchestrator 使用 `task` 工具調用。接收定案藍圖，將意圖投影至專案原始碼，並執行測試與編譯驗證。
 
 ## 思考三階段（線性流程，不可跳過）
 
